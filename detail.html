@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết công thức — KitchenPal</title>
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../scripts/config.js"></script>
+</head>
+<body data-page="detail">
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+      <button class="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+        <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+        <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button id="langToggle">EN</button>
+        <button id="themeToggle">🌙</button>
+        <div class="user-info" style="display:none;align-items:center;gap:0.5rem;">
+          <span class="user-name" style="font-size:0.85rem;font-weight:600;"></span>
+          <button class="btn btn-glass btn-sm" onclick="app.logout();window.location.reload()">←</button>
+        </div>
+        <a href="profile.html" class="btn btn-glass btn-sm" id="profileLink" style="display:none;">👤 Hồ sơ</a>
+        <a href="auth.html" class="btn btn-primary btn-sm btn-login" data-i18n="login">Đăng nhập</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div style="margin-bottom:1rem;">
+      <a href="javascript:history.back()" class="btn btn-glass btn-sm">← Back</a>
+    </div>
+
+    <div id="detailContainer">
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <p data-i18n="loading">Đang tải...</p>
+      </div>
+    </div>
+
+    <section id="similarSection" style="display:none;">
+      <h2 class="section-title" data-i18n="similarRecipes">Có thể bạn thích</h2>
+      <div class="similar-grid" id="similarGrid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+        <p data-i18n="footerDesc">Khám phá công thức từ khắp nơi trên thế giới</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="links">Liên kết</h4>
+        <ul>
+          <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+          <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+          <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2025 KitchenPal</p></div>
+  </footer>
+
+  <!-- 1. Firebase SDK FIRST -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  
+  <!-- 2. Config SECOND -->
+  <script src="../scripts/config.js"></script>
+  
+  <!-- 3. App and Credits AFTER config -->
+  <script src="../scripts/app.js"></script>
+  <script src="../scripts/credits.js"></script>
+  <script src="../scripts/user.js"></script>
+</body>
+</html>
+

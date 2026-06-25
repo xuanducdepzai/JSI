@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KitchenPal — Khám phá công thức nấu ăn</title>
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../scripts/config.js"></script>
+</head>
+<body data-page="index">
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+      <button class="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active" data-i18n="home">Trang chủ</a></li>
+        <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+        <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+        <li><a href="meal-plan.html">📅 Kế hoạch</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button id="langToggle">EN</button>
+        <button id="themeToggle">🌙</button>
+        <div class="user-info" style="display:none;align-items:center;gap:0.5rem;">
+          <span class="user-name" style="font-size:0.85rem;font-weight:600;"></span>
+          <button class="btn btn-glass btn-sm" onclick="app.logout();window.location.reload()">←</button>
+        </div>
+        <a href="profile.html" class="btn btn-glass btn-sm" id="profileLink" style="display:none;">👤 Hồ sơ</a>
+        <a href="auth.html" class="btn btn-primary btn-sm btn-login" data-i18n="login">Đăng nhập</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero -->
+    <section class="section">
+      <div class="glass hero">
+        <h1 data-i18n="featuredRecipes" style="margin-bottom:.5rem">Công thức nổi bật</h1>
+        <p class="hero-tagline" data-i18n="tagline">Khám phá hàng nghìn công thức từ khắp thế giới</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+          <a href="search.html" class="btn btn-primary btn-lg" data-i18n="startExplore">Bắt đầu khám phá</a>
+          <a href="favorite.html" class="btn btn-glass btn-lg" data-i18n="favorites">Yêu thích</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured -->
+    <section class="section">
+      <h2 class="section-title" data-i18n="featuredRecipes">Công thức nổi bật</h2>
+      <div class="grid-3" id="featuredGrid">
+        <div class="spinner-wrap" style="grid-column:1/-1">
+          <div class="spinner"></div>
+          <p data-i18n="loading">Đang tải...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Category Tabs -->
+    <section class="section">
+      <h2 class="section-title" data-i18n="categories">Danh mục</h2>
+      <div class="tabs">
+        <button class="tab-btn active" data-cat="all" data-i18n="all">Tất cả</button>
+        <button class="tab-btn" data-cat="breakfast" data-i18n="breakfast">Bữa sáng</button>
+        <button class="tab-btn" data-cat="lunch" data-i18n="lunch">Bữa trưa</button>
+        <button class="tab-btn" data-cat="dinner" data-i18n="dinner">Bữa tối</button>
+        <button class="tab-btn" data-cat="dessert" data-i18n="dessert">Tráng miệng</button>
+      </div>
+      <div class="grid-3" id="categoryGrid">
+        <div class="spinner-wrap" style="grid-column:1/-1">
+          <div class="spinner"></div>
+          <p data-i18n="loading">Đang tải...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="section">
+      <div class="glass newsletter-card">
+        <h2 data-i18n="newsletter">Nhận bản tin</h2>
+        <p data-i18n="newsletterDesc">Đăng ký để nhận công thức mới mỗi tuần</p>
+        <div class="newsletter-form">
+          <input type="email" class="form-input" data-i18n-placeholder="email" placeholder="Email...">
+          <button class="btn btn-primary" data-i18n="subscribe">Đăng ký</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+        <p data-i18n="footerDesc">Khám phá công thức nấu ăn từ khắp nơi trên thế giới</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="links">Liên kết</h4>
+        <ul>
+          <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+          <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+          <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+        <li><a href="meal-plan.html">📅 Kế hoạch</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="support">Hỗ trợ</h4>
+        <ul>
+          <li><a href="#" data-i18n="aboutUs">Về chúng tôi</a></li>
+          <li><a href="#" data-i18n="contact">Liên hệ</a></li>
+          <li><a href="#" data-i18n="termsLink">Điều khoản</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 KitchenPal. Powered by Spoonacular API</p>
+    </div>
+  </footer>
+
+  <!-- 1. Firebase SDK FIRST -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  
+  <!-- 2. Config SECOND -->
+  <script src="../scripts/config.js"></script>
+  
+  <!-- 3. App and Credits AFTER config -->
+  <script src="../scripts/app.js"></script>
+  <script src="../scripts/credits.js"></script>
+  <script src="../scripts/user.js"></script>
+</body>
+</html>
+

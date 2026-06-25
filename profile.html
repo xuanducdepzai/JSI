@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ sơ — KitchenPal</title>
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../scripts/config.js"></script>
+  <style>
+    /* ── Profile-specific styles ── */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media(max-width:900px){ .profile-grid { grid-template-columns: 1fr; } }
+
+    /* Avatar card */
+    .avatar-card {
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .avatar-card::before {
+      content:'';position:absolute;top:-40px;left:-40px;right:-40px;
+      height:160px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(233,184,114,0.25) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .avatar-wrap {
+      width: 96px; height: 96px;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      border-radius: 50%; margin: 0 auto 1rem;
+      display:flex;align-items:center;justify-content:center;
+      font-size: 2.5rem; font-weight: 800;
+      color: #fff; box-shadow: 0 8px 32px rgba(166,61,64,0.4);
+    }
+    .avatar-name { font-family: var(--font-display); font-size: 1.5rem; margin-bottom:.25rem; }
+    .avatar-email { font-size: .82rem; color: var(--text-3); margin-bottom: 1.25rem; }
+    .premium-badge {
+      display:inline-flex;align-items:center;gap:.4rem;
+      background: linear-gradient(135deg, #E9B872, #c8932c);
+      color: #1a0e00; font-size: .78rem; font-weight: 700;
+      padding: .3rem .8rem; border-radius: 100px;
+      margin-bottom: 1.25rem; letter-spacing:.03em;
+    }
+
+    /* Credit meter */
+    .credit-meter { margin: 1.25rem 0; }
+    .credit-number {
+      font-family: var(--font-display);
+      font-size: 3.5rem; line-height:1;
+      background: linear-gradient(135deg, var(--gold), var(--accent-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .credit-label { font-size: .8rem; color: var(--text-3); margin-top:.25rem; }
+    .credit-bar-track {
+      height: 8px; background: var(--surface); border-radius:100px; margin:1rem 0 .5rem;
+      overflow:hidden;
+    }
+    .credit-bar-fill {
+      height:100%;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      border-radius:100px;
+      transition: width .8s cubic-bezier(.22,1,.36,1);
+    }
+    .credit-max { font-size:.75rem; color:var(--text-3); }
+
+    /* Spin wheel */
+    .spin-section { margin-top: 1.5rem; }
+    .wheel-wrap {
+      position:relative;width:180px;height:180px;margin:1rem auto;
+    }
+    .wheel-canvas { width:180px;height:180px;border-radius:50%;display:block; }
+    .wheel-pointer {
+      position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+      font-size:1.5rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+    }
+    .spin-btn {
+      width:100%;margin-top:.75rem;
+    }
+    .spin-result {
+      margin-top:.75rem;font-weight:700;text-align:center;min-height:1.5rem;
+      font-size:.9rem;
+    }
+
+    /* Tabs */
+    .profile-tabs {
+      display:flex;gap:.5rem;border-bottom:1px solid var(--border);
+      margin-bottom:1.5rem;flex-wrap:wrap;
+    }
+    .ptab {
+      padding:.6rem 1.2rem;border:none;background:transparent;
+      color:var(--text-2);font-family:var(--font-body);font-size:.875rem;
+      font-weight:600;cursor:pointer;border-bottom:2px solid transparent;
+      transition:all .2s;margin-bottom:-1px;
+    }
+    .ptab.active { color:var(--accent);border-bottom-color:var(--accent); }
+    .ptab:hover:not(.active) { color:var(--text); }
+    .ptab-content { display:none; }
+    .ptab-content.active { display:block; }
+
+    /* Top-up packages */
+    .topup-grid {
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;
+      margin-bottom:1.5rem;
+    }
+    .topup-card {
+      padding:1.5rem 1rem;border-radius:var(--r-md);
+      border:1px solid var(--border);background:var(--surface);
+      text-align:center;cursor:pointer;transition:all .25s var(--ease);
+      position:relative;overflow:hidden;
+    }
+    .topup-card:hover {
+      transform:translateY(-4px);border-color:var(--gold);
+      box-shadow:0 8px 24px rgba(233,184,114,0.2);
+    }
+    .topup-card.popular::before {
+      content:'🔥 Phổ biến';
+      position:absolute;top:0;right:0;
+      background:var(--accent);color:#fff;
+      font-size:.7rem;font-weight:700;
+      padding:.25rem .6rem;border-bottom-left-radius:var(--r-sm);
+    }
+    .topup-points {
+      font-family:var(--font-display);font-size:2.2rem;
+      background:linear-gradient(135deg,var(--gold),var(--accent-light));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .topup-pts-label { font-size:.75rem;color:var(--text-3);margin:.2rem 0 .75rem; }
+    .topup-price { font-weight:700;color:var(--text);font-size:1rem; }
+    .topup-bonus { font-size:.75rem;color:var(--green);margin-top:.3rem; }
+
+    /* Premium card */
+    .premium-card {
+      background: linear-gradient(135deg,rgba(233,184,114,0.12),rgba(166,61,64,0.12));
+      border: 1px solid rgba(233,184,114,0.3);
+      border-radius: var(--r-lg); padding: 2rem; margin-bottom: 1.5rem;
+      position:relative;overflow:hidden;
+    }
+    .premium-card::before {
+      content:'';position:absolute;top:0;right:0;width:200px;height:200px;
+      background:radial-gradient(circle,rgba(233,184,114,0.15) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .premium-features { list-style:none;margin:1rem 0 1.5rem;display:flex;flex-direction:column;gap:.6rem; }
+    .premium-features li { display:flex;align-items:center;gap:.6rem;font-size:.875rem;color:var(--text-2); }
+    .premium-features li::before { content:'✓';color:var(--gold);font-weight:700;flex-shrink:0; }
+    .premium-price-row { display:flex;align-items:baseline;gap:.5rem;margin-bottom:1rem; }
+    .premium-price { font-family:var(--font-display);font-size:2.5rem;color:var(--gold); }
+    .premium-period { color:var(--text-3);font-size:.875rem; }
+
+    /* History list */
+    .history-list { display:flex;flex-direction:column;gap:.5rem; }
+    .history-item {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:.75rem 1rem;background:var(--surface);
+      border-radius:var(--r-sm);font-size:.85rem;
+    }
+    .history-plus { color:var(--green);font-weight:700; }
+    .history-minus { color:var(--accent-light);font-weight:700; }
+
+    /* Modal */
+    .modal-overlay {
+      position:fixed;inset:0;background:rgba(0,0,0,.7);
+      z-index:1000;display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(8px);opacity:0;pointer-events:none;
+      transition:opacity .3s;
+    }
+    .modal-overlay.open { opacity:1;pointer-events:all; }
+    .modal-box {
+      background:var(--bg-2);border:1px solid var(--border-2);
+      border-radius:var(--r-xl);padding:2.5rem;max-width:420px;width:90%;
+      transform:scale(.9);transition:transform .3s var(--ease);text-align:center;
+    }
+    .modal-overlay.open .modal-box { transform:scale(1); }
+    .modal-icon { font-size:3rem;margin-bottom:.75rem; }
+    .modal-title { font-family:var(--font-display);font-size:1.5rem;margin-bottom:.5rem; }
+    .modal-desc { color:var(--text-2);font-size:.9rem;margin-bottom:1.5rem; }
+    .modal-btns { display:flex;gap:.75rem;justify-content:center; }
+  </style>
+</head>
+<body data-page="profile">
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+      <button class="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+        <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+        <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button id="langToggle">EN</button>
+        <button id="themeToggle">🌙</button>
+        <div class="user-info" style="display:none;align-items:center;gap:0.5rem;">
+          <span class="user-name" style="font-size:0.85rem;font-weight:600;"></span>
+          <button class="btn btn-glass btn-sm" onclick="app.logout();window.location.href='index.html'">←</button>
+        </div>
+        <a href="auth.html" class="btn btn-primary btn-sm btn-login" data-i18n="login">Đăng nhập</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div id="notLoggedIn" style="display:none;">
+      <div class="empty-state glass">
+        <div class="empty-icon">🔒</div>
+        <h2>Vui lòng đăng nhập</h2>
+        <p>Bạn cần đăng nhập để xem trang cá nhân</p>
+        <a href="auth.html?redirect=profile.html" class="btn btn-primary">Đăng nhập ngay</a>
+      </div>
+    </div>
+
+    <div id="profileContent" style="display:none;">
+      <div class="profile-grid">
+
+        <!-- LEFT: Avatar + Credits + Spin -->
+        <aside>
+          <!-- Avatar Card -->
+          <div class="glass avatar-card" style="margin-bottom:1rem;">
+            <div class="avatar-wrap" id="avatarInitial">?</div>
+            <div class="avatar-name" id="profileName">—</div>
+            <div class="avatar-email" id="profileEmail">—</div>
+            <div id="premiumBadge" style="display:none;">
+              <div class="premium-badge">👑 Premium Member</div>
+            </div>
+
+            <!-- Credit Meter -->
+            <div class="credit-meter">
+              <div class="credit-number" id="creditDisplay">0</div>
+              <div class="credit-label">Điểm tín dụng</div>
+              <div class="credit-bar-track">
+                <div class="credit-bar-fill" id="creditBarFill" style="width:0%"></div>
+              </div>
+              <div class="credit-max" id="creditMaxLabel">0 / 50 điểm</div>
+            </div>
+
+            <a href="meal-plan.html" class="btn btn-primary btn-sm" style="width:100%;margin-bottom:.5rem;">
+              📅 Lập kế hoạch ăn uống
+            </a>
+            <button class="btn btn-glass btn-sm" style="width:100%;" onclick="app.logout();window.location.href='index.html'">
+              Đăng xuất
+            </button>
+          </div>
+
+          <!-- Daily Spin -->
+          <div class="glass" style="padding:1.5rem;text-align:center;">
+            <h3 style="font-family:var(--font-display);margin-bottom:.25rem;">🎰 Vòng quay may mắn</h3>
+            <p style="font-size:.8rem;color:var(--text-3);margin-bottom:.75rem;">Quay mỗi ngày để nhận 1–3 điểm miễn phí!</p>
+            <div class="wheel-wrap">
+              <div class="wheel-pointer">▼</div>
+              <canvas id="spinWheel" class="wheel-canvas" width="180" height="180"></canvas>
+            </div>
+            <button class="btn btn-primary spin-btn" id="spinBtn" onclick="doSpin()">🎲 Quay ngay!</button>
+            <div class="spin-result" id="spinResult"></div>
+          </div>
+        </aside>
+
+        <!-- RIGHT: Tabs -->
+        <div>
+          <div class="profile-tabs">
+            <button class="ptab active" data-tab="topup">⚡ Nạp điểm</button>
+            <button class="ptab" data-tab="premium">👑 Premium</button>
+            <button class="ptab" data-tab="history">📋 Lịch sử</button>
+          </div>
+
+          <!-- TOP-UP TAB -->
+          <div class="ptab-content active" id="tab-topup">
+            <h2 style="font-family:var(--font-display);margin-bottom:.5rem;">Nạp điểm tín dụng</h2>
+            <p style="color:var(--text-2);font-size:.875rem;margin-bottom:1.5rem;">Chọn gói nạp phù hợp để tiếp tục khám phá công thức và dùng AI</p>
+
+            <div class="topup-grid">
+              <div class="topup-card" onclick="buyCredits(10, '9.000đ', 0)">
+                <div class="topup-points">10</div>
+                <div class="topup-pts-label">điểm</div>
+                <div class="topup-price">9.000đ</div>
+              </div>
+              <div class="topup-card popular" onclick="buyCredits(30, '25.000đ', 10)">
+                <div class="topup-points">30</div>
+                <div class="topup-pts-label">điểm</div>
+                <div class="topup-price">25.000đ</div>
+                <div class="topup-bonus">+10% bonus</div>
+              </div>
+              <div class="topup-card" onclick="buyCredits(60, '45.000đ', 20)">
+                <div class="topup-points">60</div>
+                <div class="topup-pts-label">điểm</div>
+                <div class="topup-price">45.000đ</div>
+                <div class="topup-bonus">+20% bonus</div>
+              </div>
+              <div class="topup-card" onclick="buyCredits(120, '79.000đ', 40)">
+                <div class="topup-points">120</div>
+                <div class="topup-pts-label">điểm</div>
+                <div class="topup-price">79.000đ</div>
+                <div class="topup-bonus">+33% bonus 🔥</div>
+              </div>
+            </div>
+
+            <div class="glass" style="padding:1.25rem;border-radius:var(--r-md);">
+              <h4 style="margin-bottom:.5rem;">💡 Bảng chi phí điểm</h4>
+              <div style="display:flex;flex-direction:column;gap:.4rem;">
+                <div class="history-item"><span>👁 Xem công thức</span><span class="history-minus">-1 điểm</span></div>
+                <div class="history-item"><span>🧊 Fridge AI gợi ý món</span><span class="history-minus">-1 điểm</span></div>
+                <div class="history-item"><span>📅 Lập kế hoạch 30 ngày</span><span class="history-minus">-3 điểm</span></div>
+                <div class="history-item"><span>📅 Kế hoạch 30 ngày (Premium)</span><span class="history-minus">-2 điểm</span></div>
+                <div class="history-item"><span>🔄 Hồi điểm mỗi ngày</span><span class="history-plus">+5 điểm</span></div>
+                <div class="history-item"><span>🎰 Vòng quay may mắn</span><span class="history-plus">+1–3 điểm</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PREMIUM TAB -->
+          <div class="ptab-content" id="tab-premium">
+            <div class="premium-card">
+              <h2 style="font-family:var(--font-display);font-size:1.8rem;">👑 KitchenPal Premium</h2>
+              <p style="color:var(--text-2);margin:.5rem 0 1rem;">Nâng cấp trải nghiệm ẩm thực của bạn</p>
+              <ul class="premium-features">
+                <li>Xem không giới hạn công thức (không tốn điểm)</li>
+                <li>Giảm 50% điểm khi dùng AI lập kế hoạch 30 ngày</li>
+                <li>Huy hiệu Premium độc quyền 👑</li>
+                <li>Ưu tiên hỗ trợ và tính năng mới sớm nhất</li>
+                <li>Không quảng cáo trong tương lai</li>
+              </ul>
+              <div class="premium-price-row">
+                <div class="premium-price">49.000đ</div>
+                <div class="premium-period">/ tháng</div>
+              </div>
+              <button class="btn btn-primary" id="premiumBtn" onclick="activatePremium()" style="font-size:1rem;padding:.8rem 2rem;">
+                🚀 Kích hoạt Premium ngay
+              </button>
+              <p style="font-size:.75rem;color:var(--text-3);margin-top:.75rem;">*Đây là mô phỏng. Chưa tích hợp cổng thanh toán thực.</p>
+            </div>
+          </div>
+
+          <!-- HISTORY TAB -->
+          <div class="ptab-content" id="tab-history">
+            <h2 style="font-family:var(--font-display);margin-bottom:1rem;">Lịch sử hoạt động</h2>
+            <div class="history-list" id="historyList">
+              <p style="color:var(--text-3);text-align:center;padding:2rem;">Chưa có lịch sử</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirmModal" onclick="if(event.target === this) closeModal()">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeModal()" aria-label="Đóng modal" tabindex="1">×</button>
+      <div class="modal-icon" id="modalIcon">💳</div>
+      <div class="modal-title" id="modalTitle">Xác nhận nạp điểm</div>
+      <div class="modal-desc" id="modalDesc">Bạn có muốn tiếp tục?</div>
+      <div class="modal-btns">
+        <button class="btn btn-glass" onclick="closeModal()" tabindex="2">Hủy</button>
+        <button class="btn btn-primary" id="modalConfirmBtn" tabindex="3">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-bottom"><p>&copy; 2025 KitchenPal</p></div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <!-- 1. Firebase SDK FIRST -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  
+  <!-- 2. Config SECOND -->
+  <script src="../scripts/config.js"></script>
+  
+  <!-- 3. App and Credits AFTER config -->
+  <script src="../scripts/app.js"></script>
+  <script src="../scripts/credits.js"></script>
+  <script src="../scripts/user.js"></script>
+  <script>
+    let currentUser = null;
+    let userData = null;
+
+    // Safe wrapper for getLocalUser (fallback if credits.js hasn't loaded)
+    function safeGetLocalUser() {
+      if (typeof getLocalUser === 'function') {
+        return getLocalUser();
+      }
+      // Fallback: get from localStorage directly
+      try {
+        return JSON.parse(localStorage.getItem('user') || 'null');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function initProfile() {
+      const user = safeGetLocalUser();
+      if (!user) {
+        document.getElementById('notLoggedIn').style.display = '';
+        return;
+      }
+      currentUser = user;
+      document.getElementById('profileContent').style.display = '';
+
+      // Fill UI
+      document.getElementById('avatarInitial').textContent = (user.name || user.email)[0].toUpperCase();
+      document.getElementById('profileName').textContent = user.name || '—';
+      document.getElementById('profileEmail').textContent = user.email;
+
+      // Load Firebase data
+      try {
+        // Check if CreditSystem is available
+        if (typeof CreditSystem === 'undefined') {
+          console.warn('[Profile] CreditSystem not available, showing message');
+          document.getElementById('profileContent').innerHTML += '<p style="color:var(--text-2);margin-top:1rem;">⚠️ Tính năng tài khoản đang tải...</p>';
+          return;
+        }
+        
+        userData = await CreditSystem.getUserData(user.email);
+        if (!userData) {
+          // First time: create doc
+          await CreditSystem.onRegister(user.email, user.name || user.email);
+          userData = await CreditSystem.getUserData(user.email);
+        }
+        updateCreditUI(userData.credits || 0);
+        if (userData.isPremium) {
+          document.getElementById('premiumBadge').style.display = '';
+          document.getElementById('premiumBtn').textContent = '✅ Đã là Premium!';
+          document.getElementById('premiumBtn').disabled = true;
+        }
+        await checkSpinAvailability();
+        renderHistory(userData.creditHistory || []);
+      } catch(e) {
+        console.error('Profile init error', e);
+        showToast('Lỗi tải dữ liệu tài khoản', 'error');
+      }
+
+      drawWheel();
+    }
+
+    function updateCreditUI(credits) {
+      document.getElementById('creditDisplay').textContent = credits;
+      document.getElementById('creditBarFill').style.width = Math.min(credits / 50 * 100, 100) + '%';
+      document.getElementById('creditMaxLabel').textContent = `${credits} / 50 điểm`;
+      CreditDisplay.update(credits);
+    }
+
+    /* ── Spin Wheel ── */
+    function drawWheel() {
+      const canvas = document.getElementById('spinWheel');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const cx = 90, cy = 90, r = 88;
+      const segments = [
+        { label: '1 ⚡', color: '#A63D40' },
+        { label: '2 ⚡', color: '#E9B872' },
+        { label: '3 ⚡', color: '#90A959' },
+        { label: '1 ⚡', color: '#6494AA' },
+        { label: '2 ⚡', color: '#c9585b' },
+        { label: '1 ⚡', color: '#8B6F47' },
+      ];
+      const slice = (Math.PI * 2) / segments.length;
+      segments.forEach((seg, i) => {
+        const start = i * slice - Math.PI / 2;
+        const end = start + slice;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, end);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Label
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(start + slice / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 13px Plus Jakarta Sans, sans-serif';
+        ctx.fillText(seg.label, r - 10, 5);
+        ctx.restore();
+      });
+      // Center circle
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+      ctx.fillStyle = 'var(--bg)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    let spinning = false;
+    async function doSpin() {
+      if (spinning) return;
+      const user = safeGetLocalUser();
+      if (!user) { showToast('Vui lòng đăng nhập!', 'error'); return; }
+      try {
+        const canSpin = await CreditSystem.canSpin(user.email);
+        if (!canSpin) {
+          document.getElementById('spinResult').textContent = '⏰ Quay lại ngày mai nhé!';
+          return;
+        }
+        spinning = true;
+        document.getElementById('spinBtn').disabled = true;
+        document.getElementById('spinResult').textContent = '🌀 Đang tính toán giải thưởng...';
+
+        const result = await CreditSystem.doSpin(user.email);
+        if (!result.ok) {
+          document.getElementById('spinResult').textContent = result.message;
+          spinning = false;
+          document.getElementById('spinBtn').disabled = false;
+          return;
+        }
+
+        // We got the reward! Let's choose the target segment index
+        const reward = result.reward; // 1, 2, or 3
+        let targetSegment = 0;
+        if (reward === 3) {
+          targetSegment = 2; // segment index 2 is '3 ⚡'
+        } else if (reward === 2) {
+          // Segments 1 and 4 are '2 ⚡'
+          targetSegment = Math.random() < 0.5 ? 1 : 4;
+        } else {
+          // Segments 0, 3, 5 are '1 ⚡'
+          const idxs = [0, 3, 5];
+          targetSegment = idxs[Math.floor(Math.random() * idxs.length)];
+        }
+
+        document.getElementById('spinResult').textContent = '🌀 Đang quay...';
+
+        // Calculate exact angle to stop on targetSegment
+        // The wheel has 6 segments, 60 degrees each.
+        const offset = (Math.random() - 0.5) * 40; // -20 to +20 degrees
+        const segmentAngle = 360 - targetSegment * 60 - 30 + offset;
+        const totalAngle = 360 * 5 + segmentAngle; // 5 full rotations
+
+        const canvas = document.getElementById('spinWheel');
+        let angle = 0;
+        const duration = 3000;
+        const start = performance.now();
+
+        const animate = (now) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 4); // Quartic ease out
+          angle = totalAngle * ease;
+          canvas.style.transform = `rotate(${angle}deg)`;
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            // Finished spinning
+            spinning = false;
+            document.getElementById('spinBtn').disabled = false;
+            document.getElementById('spinResult').innerHTML = `🎉 Bạn nhận được <strong style="color:var(--gold)">${reward} điểm</strong>!`;
+            updateCreditUI(result.credits);
+            showToast(`+${reward} điểm từ vòng quay!`, 'success');
+            document.getElementById('spinBtn').textContent = '⏰ Quay lại ngày mai';
+            document.getElementById('spinBtn').disabled = true;
+            
+            // Refresh history from Firestore
+            CreditSystem.getUserData(user.email).then(newUserData => {
+              if (newUserData) renderHistory(newUserData.creditHistory || []);
+            });
+          }
+        };
+        requestAnimationFrame(animate);
+      } catch(e) { 
+        spinning = false; 
+        document.getElementById('spinBtn').disabled = false;
+        document.getElementById('spinResult').textContent = '';
+        showToast('Lỗi quay vòng!', 'error'); 
+        console.error(e);
+      }
+    }
+
+    async function checkSpinAvailability() {
+      const user = safeGetLocalUser();
+      if (!user) return;
+      const can = await CreditSystem.canSpin(user.email);
+      if (!can) {
+        document.getElementById('spinBtn').textContent = '⏰ Quay lại ngày mai';
+        document.getElementById('spinBtn').disabled = true;
+        document.getElementById('spinResult').textContent = 'Bạn đã quay hôm nay rồi!';
+      }
+    }
+
+    /* ── Tabs ── */
+    document.querySelectorAll('.ptab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.ptab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    /* ── Top-up ── */
+    function buyCredits(points, price, bonus) {
+      const total = points + bonus;
+      openModal('💳', 'Xác nhận nạp điểm',
+        `Nạp <strong>${total} điểm</strong> với giá <strong>${price}</strong>?`,
+        async () => {
+          const user = safeGetLocalUser();
+          if (!user) return showToast('Vui lòng đăng nhập!', 'error');
+          try {
+            // ✅ FIX: Use correct function name CreditSystem.add()
+            const result = await CreditSystem.add(user.email, total, `Nạp ${total} điểm (${price})`);
+            if (result.ok) {
+              updateCreditUI(result.credits);
+              // Reload from Firestore to get synchronized history!
+              const newUserData = await CreditSystem.getUserData(user.email);
+              if (newUserData) renderHistory(newUserData.creditHistory || []);
+              showToast(`✅ Nạp thành công ${total} điểm!`, 'success');
+              closeModal();
+            } else {
+              showToast('Lỗi nạp điểm: ' + (result.message || 'Unknown error'), 'error');
+            }
+          } catch (e) {
+            console.error('Buy credits error:', e);
+            showToast('Lỗi nạp điểm: ' + e.message, 'error');
+          }
+        }
+      );
+    }
+
+    /* ── Premium ── */
+    async function activatePremium() {
+      const user = safeGetLocalUser();
+      if (!user) return showToast('Vui lòng đăng nhập!', 'error');
+      openModal('👑', 'Kích hoạt Premium',
+        'Bạn sẽ được hưởng tất cả quyền lợi Premium. Đây là giao dịch mô phỏng.',
+        async () => {
+          try {
+            // ✅ FIX: Use correct function name CreditSystem.setPremium()
+            await CreditSystem.setPremium(user.email, 30);
+            document.getElementById('premiumBadge').style.display = '';
+            document.getElementById('premiumBtn').textContent = '✅ Đã là Premium!';
+            document.getElementById('premiumBtn').disabled = true;
+            showToast('🎉 Chào mừng Premium!', 'success');
+            // Reload history to show premium activated
+            const newUserData = await CreditSystem.getUserData(user.email);
+            if (newUserData) renderHistory(newUserData.creditHistory || []);
+            closeModal();
+          } catch (e) {
+            console.error('Premium activation error:', e);
+            showToast('Lỗi kích hoạt Premium: ' + e.message, 'error');
+          }
+        }
+      );
+    }
+
+    /* ── History ── */
+    function renderHistory(history) {
+      const list = document.getElementById('historyList');
+      if (!list) return;
+      if (!history || !history.length) {
+        list.innerHTML = '<p style="color:var(--text-3);text-align:center;padding:2rem;">Chưa có lịch sử</p>';
+        return;
+      }
+      
+      list.innerHTML = history.slice(-50).reverse().map(h => {
+        let label = h.reason || h.action;
+        let type = h.amount > 0 ? 'plus' : 'minus';
+        const amountStr = Math.abs(h.amount);
+
+        // Beautify labels
+        if (h.action === 'view_recipe') {
+          label = '👁️ Xem chi tiết công thức';
+        } else if (h.action === 'meal_plan') {
+          label = '📅 Lập kế hoạch dinh dưỡng 30 ngày';
+        } else if (h.action === 'spin') {
+          label = '🎰 Vòng quay may mắn hàng ngày';
+        } else if (h.action === 'register_bonus') {
+          label = '🎁 Quà tặng đăng ký tài khoản mới';
+        } else if (h.action === 'daily_regen') {
+          label = '🔄 Nạp điểm hàng ngày';
+        } else if (h.action === 'premium_activated') {
+          label = '👑 Kích hoạt Premium';
+        } else if (h.action === 'manual' || (typeof h.action === 'string' && h.action.startsWith('Nạp'))) {
+          label = `💳 ${h.reason || 'Nạp điểm tín dụng'}`;
+        } else if (h.action === 'meal_recipe_detail') {
+          label = `🍳 Xem công thức bữa ăn: ${h.reason}`;
+        }
+
+        // Format timestamp nicely
+        let timeStr = '';
+        if (h.ts) {
+          try {
+            const d = new Date(h.ts);
+            timeStr = `<span class="history-time" style="font-size:0.7rem;color:var(--text-3);margin-left:0.5rem;">${d.toLocaleDateString('vi')} ${d.toLocaleTimeString('vi', {hour: '2-digit', minute:'2-digit'})}</span>`;
+          } catch(e) {}
+        }
+
+        const balanceStr = (typeof h.balanceBefore !== 'undefined' && typeof h.balanceAfter !== 'undefined') 
+          ? `<span style="font-size:0.7rem;color:var(--text-3);display:block;margin-top:0.25rem;">${h.balanceBefore} → ${h.balanceAfter}</span>` 
+          : '';
+
+        return `
+          <div class="history-item" style="padding:1rem;background:var(--surface);border-radius:var(--r-md);border:1px solid var(--border);transition:all 0.2s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+              <div>
+                <div style="font-weight:600;">${label}</div>
+                ${balanceStr}
+                ${timeStr}
+              </div>
+              <span class="history-${type}" style="font-size:1.1rem;font-weight:700;">${type === 'plus' ? '+' : '-'}${amountStr} điểm</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* ── Modal ── */
+    let _modalCallback = null;
+    function openModal(icon, title, desc, onConfirm) {
+      document.getElementById('modalIcon').textContent = icon;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalDesc').innerHTML = desc;
+      _modalCallback = onConfirm;
+      document.getElementById('confirmModal').classList.add('open');
+    }
+    function closeModal() { document.getElementById('confirmModal').classList.remove('open'); }
+    document.getElementById('modalConfirmBtn').addEventListener('click', () => { if(_modalCallback) _modalCallback(); });
+
+    document.addEventListener('DOMContentLoaded', initProfile);
+  </script>
+</body>
+</html>

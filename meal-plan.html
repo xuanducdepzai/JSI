@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kế hoạch ăn 30 ngày — KitchenPal v5 FIXED</title>
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../scripts/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Meal Plan Styles ── */
+    .mp-hero {
+      text-align:center;padding:3rem 2rem 2rem;
+      background:linear-gradient(135deg,rgba(166,61,64,.12),rgba(233,184,114,.08));
+      border-radius:var(--r-xl);margin-bottom:2rem;position:relative;overflow:hidden;
+    }
+    .mp-hero::before {
+      content:'📅';position:absolute;right:2rem;bottom:1rem;
+      font-size:6rem;opacity:.07;
+    }
+    .mp-hero h1 { font-size:clamp(1.8rem,4vw,2.8rem); }
+    .cost-chip {
+      display:inline-flex;align-items:center;gap:.4rem;
+      background:rgba(233,184,114,.15);border:1px solid rgba(233,184,114,.35);
+      color:var(--gold);border-radius:100px;padding:.3rem .9rem;
+      font-size:.8rem;font-weight:700;margin:.5rem 0;
+    }
+
+    .goals-grid {
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;
+      margin-bottom:1.5rem;
+    }
+    .goal-card {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-md);padding:1.25rem;
+    }
+    .goal-card label {
+      display:block;font-size:.78rem;color:var(--text-3);
+      font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;
+    }
+    .goal-card input, .goal-card select {
+      width:100%;background:var(--surface-2);border:1px solid var(--border-2);
+      border-radius:var(--r-sm);padding:.6rem .9rem;color:var(--text);
+      font-family:var(--font-body);font-size:.9rem;
+    }
+    .goal-card input:focus, .goal-card select:focus {
+      outline:none;border-color:var(--accent);
+    }
+
+    .cost-warn {
+      background:linear-gradient(135deg,rgba(233,184,114,.12),rgba(166,61,64,.08));
+      border:1px solid rgba(233,184,114,.35);
+      border-radius:var(--r-md);padding:1.25rem;margin-bottom:1.5rem;
+      display:flex;align-items:flex-start;gap:.75rem;
+    }
+    .cost-warn-icon { font-size:1.5rem;flex-shrink:0; }
+    .cost-warn-text h4 { font-size:.95rem;margin-bottom:.25rem;color:var(--gold); }
+    .cost-warn-text p { font-size:.82rem;color:var(--text-2);margin:0; }
+
+    .summary-stats {
+      display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;
+    }
+    @media(max-width:600px){ .summary-stats{grid-template-columns:repeat(2,1fr);} }
+    .stat-card {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-md);padding:1.25rem;text-align:center;
+    }
+    .stat-value {
+      font-family:var(--font-display);font-size:1.8rem;
+      background:linear-gradient(135deg,var(--gold),var(--accent-light));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .stat-label { font-size:.78rem;color:var(--text-3);margin-top:.25rem; }
+
+    .chart-grid {
+      display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;
+    }
+    @media(max-width:768px){ .chart-grid{grid-template-columns:1fr;} }
+    .chart-card {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:1.5rem;
+    }
+    .chart-card h3 { font-family:var(--font-display);margin-bottom:1rem;font-size:1.1rem; }
+
+    .nut-table {
+      width:100%;border-collapse:collapse;font-size:.82rem;
+    }
+    .nut-table thead th {
+      text-align:left;padding:.6rem .75rem;
+      background:var(--surface-2);color:var(--text-2);
+      font-weight:600;border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+    .nut-table tbody td {
+      padding:.55rem .75rem;border-bottom:1px solid var(--border);color:var(--text-2);
+    }
+
+    .ai-tips {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:1.5rem;margin-bottom:2rem;
+    }
+    .ai-tips h3 { margin-top:0; }
+    
+    .day-card-grid {
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;
+      margin-bottom:2rem;
+    }
+    .day-card {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:1.25rem;
+    }
+    .day-card h4 { margin-top:0;font-size:1.1rem; }
+    .day-meal {
+      background:var(--surface-2);border-radius:var(--r-sm);
+      padding:.75rem;margin-bottom:.75rem;font-size:.85rem;
+    }
+    .day-meal-name { font-weight:600;margin-bottom:.25rem; }
+    .day-meal-nut { font-size:.75rem;color:var(--text-3); }
+
+    /* ✅ NEW: Loading state styles */
+    .spinner-mini {
+      display:inline-block;width:16px;height:16px;
+      border:2px solid rgba(255,255,255,.3);
+      border-top-color:#fff;border-radius:50%;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body data-page="meal-plan">
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+      <button class="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+        <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+        <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+        <li><a href="meal-plan.html" class="active">📅 Kế hoạch</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button id="langToggle">EN</button>
+        <button id="themeToggle">🌙</button>
+        <div class="user-info" style="display:none;align-items:center;gap:0.5rem;">
+          <span class="user-name" style="font-size:0.85rem;font-weight:600;"></span>
+          <button class="btn btn-glass btn-sm" onclick="app.logout();window.location.reload()">←</button>
+        </div>
+        <a href="profile.html" class="btn btn-glass btn-sm" id="profileLink" style="display:none;">👤 Hồ sơ</a>
+        <a href="auth.html" class="btn btn-primary btn-sm btn-login" data-i18n="login">Đăng nhập</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Hero -->
+    <div class="mp-hero">
+      <h1>📅 Kế hoạch ăn 30 ngày AI</h1>
+      <p style="color:var(--text-2);">Tạo kế hoạch dinh dưỡng cá nhân hóa dựa trên mục tiêu của bạn</p>
+      <div class="cost-chip">⚡ Tốn 3 điểm (2 nếu Premium)</div>
+    </div>
+
+    <!-- Goals Input -->
+    <div id="planInput" class="glass" style="padding:2rem;border-radius:var(--r-xl);margin-bottom:2rem;">
+      <h2 style="margin-top:0;font-size:1.3rem;">Đặt mục tiêu của bạn</h2>
+      
+      <div class="goals-grid">
+        <div class="goal-card">
+          <label>🔥 Calo/ngày</label>
+          <input type="number" id="goalCal" value="2000" min="1200" max="4000">
+        </div>
+        <div class="goal-card">
+          <label>💪 Protein (g)</label>
+          <input type="number" id="goalProtein" value="100" min="30" max="300">
+        </div>
+        <div class="goal-card">
+          <label>🌾 Carbs (g)</label>
+          <input type="number" id="goalCarbs" value="250" min="50" max="500">
+        </div>
+        <div class="goal-card">
+          <label>🥑 Fat (g)</label>
+          <input type="number" id="goalFat" value="65" min="20" max="200">
+        </div>
+        <div class="goal-card">
+          <label>🥗 Chế độ ăn</label>
+          <select id="goalDiet">
+            <option value="Bình thường">Bình thường</option>
+            <option value="Ăn chay">Ăn chay</option>
+            <option value="Thuần chay">Thuần chay</option>
+            <option value="Keto">Keto</option>
+            <option value="Ít carb">Ít Carb</option>
+            <option value="Giảm cân">Giảm cân</option>
+          </select>
+        </div>
+        <div class="goal-card" style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" id="generateBtn" onclick="generateMealPlan()" style="width:100%;font-size:1rem;">
+            ✨ Tạo kế hoạch với AI
+          </button>
+        </div>
+      </div>
+
+      <!-- ✅ FIX: Chi phí cảnh báo cập nhật realtime -->
+      <div class="cost-warn" id="costWarn">
+        <div class="cost-warn-icon">⚠️</div>
+        <div class="cost-warn-text">
+          <h4>Lưu ý: Tính năng này tốn điểm tín dụng</h4>
+          <p>Tạo kế hoạch 30 ngày tốn <strong>3 điểm</strong> (hoặc 2 điểm nếu Premium). 
+             Điểm hiện tại: <strong id="currentCreditWarn">—</strong>. 
+             Vui lòng xác nhận để tiếp tục.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="planResults" style="display:none;">
+
+      <!-- Summary -->
+      <div class="summary-stats" id="summaryStats"></div>
+
+      <!-- AI Tips -->
+      <div class="ai-tips" id="aiTips" style="display:none;">
+        <h3>💡 Lời khuyên từ AI</h3>
+        <p id="aiTipsText"></p>
+      </div>
+
+      <!-- Charts -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>📊 Calo 7 ngày đầu</h3>
+          <canvas id="calChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>🍽️ Macro Average</h3>
+          <canvas id="macroChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Nutrition Table -->
+      <div class="chart-card" style="grid-column:1/-1;">
+        <h3>📋 Dinh dưỡng theo tuần</h3>
+        <table class="nut-table">
+          <thead>
+            <tr>
+              <th>Tuần</th><th>Calo</th><th>Mục tiêu</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Đánh giá</th><th>Mua sắm</th>
+            </tr>
+          </thead>
+          <tbody id="nutTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Day Cards -->
+      <div id="dayCardsSection"></div>
+
+      <!-- Empty State -->
+      <div id="emptyPlan" style="display:none;">
+        <div class="empty-state glass">
+          <div class="empty-icon">😕</div>
+          <h2>Không tạo được kế hoạch</h2>
+          <p>Vui lòng thử lại với các mục tiêu khác</p>
+          <button class="btn btn-primary" onclick="location.reload()">↺ Tải lại trang</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+        <p data-i18n="footerDesc">Khám phá công thức nấu ăn từ khắp nơi trên thế giới</p>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2025 KitchenPal</p></div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="../scripts/config.js"></script>
+  <script src="../scripts/app.js"></script>
+  <script src="../scripts/credits.js"></script>
+  <script src="../scripts/user.js"></script>
+  <script>
+    /* ✅ FIXED v5: Meal Plan Logic */
+    'use strict';
+
+    // Safe wrapper for getLocalUser (fallback if credits.js hasn't loaded)
+    function safeGetLocalUser() {
+      if (typeof getLocalUser === 'function') {
+        return getLocalUser();
+      }
+      // Fallback: get from localStorage directly
+      try {
+        return JSON.parse(localStorage.getItem('user') || 'null');
+      } catch (e) {
+        return null;
+      }
+    }
+
+    let calChartInst = null;
+    let macroChartInst = null;
+    let currentPlan = null;
+
+    // ✅ FIX: Load credit hiển thị khi trang load
+    async function loadCurrentCredit() {
+      const user = safeGetLocalUser();
+      if (!user) {
+        document.getElementById('currentCreditWarn').textContent = '—';
+        return;
+      }
+      try {
+        const credits = await CreditSystem.getCredits(user.email);
+        document.getElementById('currentCreditWarn').textContent = credits;
+      } catch (e) {
+        console.warn('Load credit error:', e);
+        document.getElementById('currentCreditWarn').textContent = '?';
+      }
+    }
+
+    // ✅ FIX: Tạo kế hoạch với validation + confirm
+    async function generateMealPlan() {
+      const user = safeGetLocalUser();
+      
+      // ✅ FIX #1: Kiểm tra đăng nhập
+      if (!user) {
+        app.showToast('❌ Vui lòng đăng nhập để tạo kế hoạch', 'error');
+        window.location.href = 'auth.html?redirect=' + encodeURIComponent(window.location.href);
+        return;
+      }
+
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.textContent = '🌀 AI đang xử lý...';
+
+      try {
+        // Lấy mục tiêu từ form
+        const goals = {
+          calories: parseInt(document.getElementById('goalCal')?.value) || 2000,
+          protein: parseInt(document.getElementById('goalProtein')?.value) || 100,
+          carbs: parseInt(document.getElementById('goalCarbs')?.value) || 250,
+          fat: parseInt(document.getElementById('goalFat')?.value) || 65,
+          diet: document.getElementById('goalDiet')?.value || 'Bình thường'
+        };
+
+        // ✅ FIX #2: Kiểm tra credits + xác nhận
+        let credits = 0;
+        let isPremiumUser = false;
+        try {
+          const userData = await CreditSystem.getUserData(user.email);
+          credits = userData.credits || 0;
+          isPremiumUser = userData.isPremium || false;
+        } catch (e) {
+          app.showToast('❌ Không thể kiểm tra dữ liệu tài khoản', 'error');
+          throw e;
+        }
+
+        const costAmount = isPremiumUser ? CREDITS.COST_MEAL_PLAN_PREMIUM : CREDITS.COST_MEAL_PLAN;
+        if (credits < costAmount) {
+          app.showToast(`❌ Không đủ ${costAmount} điểm! Bạn có ${credits} điểm.`, 'error');
+          btn.disabled = false;
+          btn.textContent = '✨ Tạo kế hoạch với AI';
+          return;
+        }
+
+        // ✅ FIX #3: Confirm trước khi trừ điểm
+        const confirmMsg = `Tạo kế hoạch 30 ngày sẽ tốn ${costAmount} điểm (bạn có ${credits} điểm${isPremiumUser ? ' - Đã áp dụng giảm giá Premium 👑' : ''}).\nBạn có chắc chắn không?`;
+        
+        if (!confirm(confirmMsg)) {
+          btn.disabled = false;
+          btn.textContent = '✨ Tạo kế hoạch với AI';
+          return;
+        }
+
+        // ✅ FIX #4: Trừ điểm TRƯỚC khi gọi AI
+        const chargeResult = await CreditSystem.chargeMealPlan(user.email);
+        if (!chargeResult.ok) {
+          app.showToast(chargeResult.message, 'error');
+          btn.disabled = false;
+          btn.textContent = '✨ Tạo kế hoạch với AI';
+          return;
+        }
+
+        app.showToast(`✅ Đã trừ ${costAmount} điểm. Đang tạo kế hoạch...`, 'success');
+
+        // Gọi Gemini AI
+        const data = await GeminiAI.mealPlan(goals);
+
+        // ✅ FIX #5: Validate response từ AI
+        if (!data || !data.plan || data.plan.length === 0) {
+          throw new Error('AI không trả về kế hoạch hợp lệ');
+        }
+
+        currentPlan = data.plan;
+
+        // Ẩn form input, hiển thị results
+        document.getElementById('planInput').style.display = 'none';
+        document.getElementById('planResults').style.display = '';
+
+        // Render kế hoạch
+        renderPlan(data, goals);
+        
+        // Update credit display
+        CreditDisplay.update(chargeResult.credits);
+
+      } catch (error) {
+        console.error('[Meal Plan Error]', error);
+        app.showToast(`❌ Lỗi: ${error.message}`, 'error');
+        
+        // Hiển thị empty state
+        document.getElementById('planInput').style.display = 'none';
+        document.getElementById('planResults').style.display = '';
+        document.getElementById('emptyPlan').style.display = '';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Tạo kế hoạch với AI';
+      }
+    }
+
+    // Render plan
+    function renderPlan(data, goals) {
+      renderSummary(data.plan, goals);
+      renderAITips(data.tips);
+      renderCharts(data.plan, goals);
+      renderNutTable(data.plan, goals);
+      renderDayCards(data.plan);
+    }
+
+    // Render summary stats
+    function renderSummary(plan, goals) {
+      const avgCal = Math.round(plan.reduce((s,d) => s + dayTotal(d,'cal'), 0) / plan.length);
+      const avgProt = Math.round(plan.reduce((s,d) => s + dayTotal(d,'protein'), 0) / plan.length);
+      const avgCarb = Math.round(plan.reduce((s,d) => s + dayTotal(d,'carbs'), 0) / plan.length);
+      const avgFat  = Math.round(plan.reduce((s,d) => s + dayTotal(d,'fat'), 0) / plan.length);
+
+      document.getElementById('summaryStats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${avgCal}</div><div class="stat-label">TB Calo/ngày</div></div>
+        <div class="stat-card"><div class="stat-value">${avgProt}g</div><div class="stat-label">TB Protein/ngày</div></div>
+        <div class="stat-card"><div class="stat-value">${avgCarb}g</div><div class="stat-label">TB Carbs/ngày</div></div>
+        <div class="stat-card"><div class="stat-value">${avgFat}g</div><div class="stat-label">TB Fat/ngày</div></div>
+      `;
+    }
+
+    // Render AI tips
+    function renderAITips(tips) {
+      if (!tips) return;
+      document.getElementById('aiTips').style.display = '';
+      document.getElementById('aiTipsText').textContent = tips;
+    }
+
+    // Render charts
+    function renderCharts(plan, goals) {
+      const first7 = plan.slice(0, 7);
+      const labels = first7.map(d => `Ngày ${d.day}`);
+      const calData = first7.map(d => dayTotal(d, 'cal'));
+      const goalLine = first7.map(() => goals.calories);
+
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const gridColor = isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
+      const textColor = isDark ? 'rgba(240,240,244,.6)' : 'rgba(21,21,21,.6)';
+
+      if (calChartInst) calChartInst.destroy();
+      if (macroChartInst) macroChartInst.destroy();
+
+      calChartInst = new Chart(document.getElementById('calChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Calo thực tế',
+              data: calData,
+              backgroundColor: 'rgba(166,61,64,.75)',
+              borderRadius: 6,
+            },
+            {
+              label: 'Mục tiêu',
+              data: goalLine,
+              type: 'line',
+              borderColor: '#E9B872',
+              borderDash: [5,5],
+              borderWidth: 2,
+              fill: false,
+              pointStyle: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { labels: { color: textColor } } },
+          scales: {
+            y: { grid: { color: gridColor }, ticks: { color: textColor } },
+            x: { grid: { color: gridColor }, ticks: { color: textColor } }
+          }
+        }
+      });
+
+      const avgProt = Math.round(plan.reduce((s,d) => s + dayTotal(d,'protein'), 0) / plan.length);
+      const avgCarb = Math.round(plan.reduce((s,d) => s + dayTotal(d,'carbs'), 0) / plan.length);
+      const avgFat = Math.round(plan.reduce((s,d) => s + dayTotal(d,'fat'), 0) / plan.length);
+
+      macroChartInst = new Chart(document.getElementById('macroChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Protein', 'Carbs', 'Fat'],
+          datasets: [{
+            data: [avgProt, avgCarb, avgFat],
+            backgroundColor: ['#4ade80', '#3b82f6', '#f59e0b'],
+            borderColor: 'var(--bg, #0d0d12)',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { labels: { color: textColor } } }
+        }
+      });
+    }
+
+    // Render nutrition table
+    function renderNutTable(plan, goals) {
+      const tbody = document.getElementById('nutTableBody');
+      tbody.innerHTML = '';
+
+      for (let week = 0; week < 4; week++) {
+        const start = week * 7;
+        const end = Math.min(start + 7, plan.length);
+        const days = plan.slice(start, end);
+        
+        const avgCal = Math.round(days.reduce((s,d) => s + dayTotal(d,'cal'), 0) / days.length);
+        const avgProt = Math.round(days.reduce((s,d) => s + dayTotal(d,'protein'), 0) / days.length);
+        const avgCarb = Math.round(days.reduce((s,d) => s + dayTotal(d,'carbs'), 0) / days.length);
+        const avgFat = Math.round(days.reduce((s,d) => s + dayTotal(d,'fat'), 0) / days.length);
+        
+        const diff = Math.abs(avgCal - goals.calories);
+        const rating = diff < 50 ? '⭐⭐⭐⭐⭐' : diff < 150 ? '⭐⭐⭐⭐' : '⭐⭐⭐';
+
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>Tuần ${week + 1}</strong></td>
+            <td>${avgCal}</td>
+            <td>${goals.calories}</td>
+            <td>${avgProt}g</td>
+            <td>${avgCarb}g</td>
+            <td>${avgFat}g</td>
+            <td>${rating}</td>
+            <td><button style="padding:.25rem .5rem;font-size:.75rem;background:rgba(233,184,114,0.15);border:1px solid var(--gold);border-radius:4px;color:var(--gold);cursor:pointer;transition:all 0.2s;" onclick="downloadWeekShoppingList(${week + 1})">🛒 Tải</button></td>
+          </tr>
+        `;
+      }
+    }
+
+    // Render day cards
+    function renderDayCards(plan) {
+      const section = document.getElementById('dayCardsSection');
+      section.innerHTML = '<h2 style="font-size:1.3rem;margin-top:2rem;margin-bottom:1.5rem;">📆 Chi tiết 30 ngày</h2>';
+      
+      const grid = document.createElement('div');
+      grid.className = 'day-card-grid';
+
+      plan.forEach(day => {
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        
+        const dayNum = day.day;
+        const calTotal = dayTotal(day, 'cal');
+        const protTotal = dayTotal(day, 'protein');
+
+        let html = `<h4>Ngày ${dayNum}</h4>`;
+        html += `<div style="font-size:.85rem;color:var(--text-2);margin-bottom:1rem;">`;
+        html += `🔥 ${calTotal} cal | 💪 ${protTotal}g protein</div>`;
+
+        if (day.breakfast) {
+          html += `<div class="day-meal" style="cursor:pointer; transition: transform 0.2s;" onclick="showMealDetails(${dayNum}, 'Bữa sáng', '${day.breakfast.name.replace(/'/g, "\\'")}', ${day.breakfast.cal}, ${day.breakfast.protein})">
+            <div class="day-meal-name">🥐 ${day.breakfast.name}</div>
+            <div class="day-meal-nut">${day.breakfast.cal}cal | ${day.breakfast.protein}g protein</div>
+          </div>`;
+        }
+        if (day.lunch) {
+          html += `<div class="day-meal" style="cursor:pointer; transition: transform 0.2s;" onclick="showMealDetails(${dayNum}, 'Bữa trưa', '${day.lunch.name.replace(/'/g, "\\'")}', ${day.lunch.cal}, ${day.lunch.protein})">
+            <div class="day-meal-name">🍱 ${day.lunch.name}</div>
+            <div class="day-meal-nut">${day.lunch.cal}cal | ${day.lunch.protein}g protein</div>
+          </div>`;
+        }
+        if (day.dinner) {
+          html += `<div class="day-meal" style="cursor:pointer; transition: transform 0.2s;" onclick="showMealDetails(${dayNum}, 'Bữa tối', '${day.dinner.name.replace(/'/g, "\\'")}', ${day.dinner.cal}, ${day.dinner.protein})">
+            <div class="day-meal-name">🍜 ${day.dinner.name}</div>
+            <div class="day-meal-nut">${day.dinner.cal}cal | ${day.dinner.protein}g protein</div>
+          </div>`;
+        }
+
+        card.innerHTML = html;
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+    }
+
+    // Dynamic Meal Details recipe modal
+    async function showMealDetails(dayNum, mealType, mealName, cal, protein) {
+      const user = safeGetLocalUser();
+      if (!user) {
+        app.showToast('❌ Vui lòng đăng nhập để xem chi tiết', 'error');
+        return;
+      }
+      
+      try {
+        const userData = await CreditSystem.getUserData(user.email);
+        const isPremium = userData.isPremium || false;
+        
+        // Cache recipes in sessionStorage to prevent multiple deductions for the same meal
+        const cacheKey = `meal_recipe_${mealName.replace(/\s+/g, '_')}`;
+        let cachedRecipe = sessionStorage.getItem(cacheKey);
+        
+        if (!cachedRecipe) {
+          if (!isPremium) {
+            const credits = userData.credits || 0;
+            if (credits < 1) {
+              app.showToast('❌ Không đủ điểm tín dụng! Bạn cần 1 điểm để xem công thức chi tiết.', 'error');
+              return;
+            }
+            if (!confirm(`Xem chi tiết nguyên liệu và cách chế biến món "${mealName}" tốn 1 điểm. Bạn có muốn tiếp tục không?`)) {
+              return;
+            }
+            
+            // Deduct credit
+            const deductResult = await CreditSystem.deduct(user.email, 1, 'meal_recipe_detail', mealName);
+            if (!deductResult.ok) {
+              app.showToast(deductResult.message, 'error');
+              return;
+            }
+            CreditDisplay.update(deductResult.credits);
+            loadCurrentCredit();
+            app.showToast('⚡ Đã trừ 1 điểm.', 'success');
+          }
+          
+          openRecipeModal(`🍳 ${mealName}`, `<div style="text-align:center;padding:2rem;"><div style="border:3px solid rgba(255,255,255,0.1);border-top-color:var(--gold);border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;margin:0 auto 1rem;"></div>Đang dùng AI tạo công thức chi tiết...</div>`);
+          
+          const prompt = `Hãy phân tích và viết công thức chi tiết cho món ăn sau: "${mealName}".
+          Thông số dinh dưỡng mục tiêu: Calo khoảng ${cal}kcal, Protein khoảng ${protein}g.
+          Yêu cầu trả về định dạng JSON:
+          {
+            "ingredients": ["danh sách nguyên liệu kèm định lượng", ...],
+            "instructions": ["các bước chế biến chi tiết", ...]
+          }
+          Chỉ trả JSON thuần, không kèm markdown, không viết gì khác ngoài JSON.`;
+          
+          const raw = await GeminiAI.ask(prompt);
+          const clean = raw.replace(/```json|```/g, '').trim();
+          const parsed = JSON.parse(clean);
+          
+          cachedRecipe = JSON.stringify(parsed);
+          sessionStorage.setItem(cacheKey, cachedRecipe);
+        }
+        
+        const recipe = JSON.parse(cachedRecipe);
+        
+        let html = `
+          <div style="background:rgba(255,255,255,0.02);padding:1rem;border-radius:8px;margin-bottom:1.5rem;display:flex;justify-content:space-around;font-size:0.85rem;border:1px solid rgba(255,255,255,0.05);">
+            <div><strong>🔥 Calo:</strong> ${cal} kcal</div>
+            <div><strong>💪 Protein:</strong> ${protein}g</div>
+            <div><strong>🥗 Bữa:</strong> ${mealType}</div>
+          </div>
+          <h4 style="color:var(--gold);margin-bottom:0.5rem;font-size:1.05rem;">🛒 Nguyên liệu chính:</h4>
+          <ul style="padding-left:1.2rem;margin-bottom:1.5rem;display:flex;flex-direction:column;gap:0.35rem;">
+            \${recipe.ingredients.map(ing => \`<li>\${ing}</li>\`).join('')}
+          </ul>
+          <h4 style="color:var(--gold);margin-bottom:0.5rem;font-size:1.05rem;">🍳 Hướng dẫn chế biến:</h4>
+          <ol style="padding-left:1.2rem;display:flex;flex-direction:column;gap:0.5rem;">
+            \${recipe.instructions.map(step => \`<li>\${step}</li>\`).join('')}
+          </ol>
+        `;
+        
+        openRecipeModal(`🍳 ${mealName}`, html);
+      } catch(e) {
+        console.error(e);
+        app.showToast('❌ Lỗi tạo công thức: ' + e.message, 'error');
+        closeRecipeModal();
+      }
+    }
+
+    function openRecipeModal(title, bodyHtml) {
+      document.getElementById('recipeModalTitle').textContent = title;
+      document.getElementById('recipeModalBody').innerHTML = bodyHtml;
+      document.getElementById('recipeDetailsModal').classList.add('open');
+    }
+
+    function closeRecipeModal() {
+      document.getElementById('recipeDetailsModal').classList.remove('open');
+    }
+
+    // Weekly shopping list download
+    async function downloadWeekShoppingList(weekNum) {
+      if (!currentPlan) {
+        app.showToast('❌ Không tìm thấy dữ liệu kế hoạch ăn uống', 'error');
+        return;
+      }
+      
+      const start = (weekNum - 1) * 7;
+      const end = Math.min(start + 7, currentPlan.length);
+      const days = currentPlan.slice(start, end);
+      
+      let mealsList = [];
+      days.forEach(d => {
+        if (d.breakfast) mealsList.push(`Ngày \${d.day} - Bữa sáng: \${d.breakfast.name}`);
+        if (d.lunch) mealsList.push(`Ngày \${d.day} - Bữa trưa: \${d.lunch.name}`);
+        if (d.dinner) mealsList.push(`Ngày \${d.day} - Bữa tối: \${d.dinner.name}`);
+      });
+      
+      const btn = document.querySelector(\`button[onclick="downloadWeekShoppingList(\${weekNum})"]\`);
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '🌀 Đang tạo...';
+      
+      try {
+        app.showToast(\`🛒 Đang dùng AI tổng hợp danh sách mua sắm tuần \${weekNum}...\\n(Có thể mất vài giây)\`, 'info');
+        
+        const prompt = \`Hãy lập một danh sách nguyên liệu mua sắm (grocery list) tổng hợp cho các bữa ăn sau của Tuần \${weekNum}:
+        \${mealsList.join('\\n')}
+        
+        Yêu cầu:
+        1. Nhóm các nguyên liệu theo danh mục hợp lý (Thịt & Hải sản, Rau củ quả, Gia vị & Đồ khô, v.v.).
+        2. Ước tính tổng định lượng cần mua cho cả tuần.
+        3. Viết rõ ràng, dễ hiểu bằng Tiếng Việt.
+        Chỉ trả danh sách văn bản thuần chất lượng cao, không viết lời mở đầu hay kết thúc.\`;
+        
+        const responseText = await GeminiAI.ask(prompt);
+        
+        const blob = new Blob([responseText], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = \`KitchenPal_ShoppingList_Tuan_\${weekNum}.txt\`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        app.showToast(\`✅ Đã tải xuống danh sách mua sắm Tuần \${weekNum}!\`, 'success');
+      } catch (e) {
+        console.error(e);
+        app.showToast('❌ Lỗi tạo danh sách mua sắm: ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    // Helper: Calculate day total
+    function dayTotal(day, key) {
+      let sum = 0;
+      if (day.breakfast) sum += day.breakfast[key] || 0;
+      if (day.lunch) sum += day.lunch[key] || 0;
+      if (day.dinner) sum += day.dinner[key] || 0;
+      return sum;
+    }
+
+    // Page load
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+      loadCurrentCredit();
+    });
+  </script>
+
+  <!-- Recipe Details Modal -->
+  <div class="modal-overlay" id="recipeDetailsModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,17,23,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:all 0.3s;z-index:9999;">
+    <div class="modal-box glass" style="background:rgba(21,23,30,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:2rem;width:90%;max-width:550px;box-shadow:0 20px 40px rgba(0,0,0,0.5);transform:translateY(20px);transition:all 0.3s;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:0.75rem;">
+        <h2 id="recipeModalTitle" style="font-family:var(--font-display);font-size:1.5rem;margin:0;color:var(--gold);">Chi tiết món ăn</h2>
+        <button onclick="closeRecipeModal()" style="background:none;border:none;color:#fff;font-size:1.25rem;cursor:pointer;opacity:0.6;transition:opacity 0.2s;">✕</button>
+      </div>
+      <div id="recipeModalBody" style="max-height:380px;overflow-y:auto;color:var(--text-2);font-size:0.9rem;line-height:1.6;">
+        <!-- Dynamic content will be injected here -->
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.08);padding-top:1rem;">
+        <button class="btn btn-primary" onclick="closeRecipeModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .modal-overlay.open { opacity: 1 !important; pointer-events: auto !important; }
+    .modal-overlay.open .modal-box { transform: translateY(0) !important; }
+  </style>
+</body>
+</html>

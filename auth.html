@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập — KitchenPal</title>
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../scripts/config.js"></script>
+</head>
+<body data-page="auth">
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+      <button class="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+        <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+        <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button id="langToggle">EN</button>
+        <button id="themeToggle">🌙</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="auth-container">
+      <div style="width:100%;max-width:480px;">
+
+        <!-- Login Form -->
+        <div id="loginForm" class="glass auth-card">
+          <h1 data-i18n="loginTitle">Đăng nhập</h1>
+          <p class="auth-subtitle" style="color:var(--text-2);text-align:center;margin-top:.35rem;margin-bottom:2rem;">
+            Chào mừng bạn quay lại KitchenPal 🍳
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="email">Email</label>
+            <input type="email" id="loginEmail" class="form-input" data-i18n-placeholder="email" placeholder="Email..." required tabindex="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="password">Mật khẩu</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required minlength="6" tabindex="2">
+          </div>
+          <div class="form-group" style="display:flex;justify-content:space-between;align-items:center;">
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.875rem;color:var(--text-2);">
+              <input type="checkbox" id="rememberMe" style="accent-color:var(--accent)">
+              <span data-i18n="remember">Ghi nhớ</span>
+            </label>
+            <a href="#" style="font-size:.875rem;" data-i18n="forgotPassword">Quên mật khẩu?</a>
+          </div>
+
+          <button id="loginBtn" class="btn btn-primary" style="width:100%;margin-bottom:1rem;" data-i18n="login">
+            Đăng nhập
+          </button>
+
+          <div class="divider" data-i18n="or">Hoặc</div>
+
+          <div class="social-btns">
+            <button id="fbLoginBtn" class="btn btn-glass">🔵 Facebook</button>
+            <button id="googleLoginBtn" class="btn btn-glass">🔴 Google</button>
+          </div>
+
+          <p class="auth-footer-link">
+            <span data-i18n="noAccount">Chưa có tài khoản?</span>
+            <a href="#" onclick="toggleForms();return false;" data-i18n="registerNow">Đăng ký ngay</a>
+          </p>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="glass auth-card hidden">
+          <h1 data-i18n="registerTitle">Đăng ký</h1>
+          <p class="auth-subtitle" style="color:var(--text-2);text-align:center;margin-top:.35rem;margin-bottom:2rem;">
+            Tạo tài khoản và khám phá công thức tuyệt vời
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="name">Họ và tên</label>
+            <input type="text" id="registerName" class="form-input" placeholder="Tên của bạn..." required minlength="2" tabindex="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="email">Email</label>
+            <input type="email" id="registerEmail" class="form-input" placeholder="Email..." required tabindex="2">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="password">Mật khẩu</label>
+            <input type="password" id="registerPassword" class="form-input" placeholder="Ít nhất 8 ký tự..." required minlength="8" tabindex="3">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="confirmPassword">Xác nhận mật khẩu</label>
+            <input type="password" id="registerConfirmPassword" class="form-input" placeholder="Nhập lại mật khẩu..." required minlength="8" tabindex="4">
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer;font-size:.875rem;color:var(--text-2);">
+              <input type="checkbox" id="agreeTerms" style="accent-color:var(--accent);margin-top:.15rem;">
+              <span>
+                <span data-i18n="agreeTerms">Tôi đồng ý với</span>
+                <a href="#" data-i18n="terms">điều khoản dịch vụ</a> &
+                <a href="#" data-i18n="policy">chính sách bảo mật</a>
+              </span>
+            </label>
+          </div>
+
+          <button id="registerBtn" class="btn btn-primary" style="width:100%;margin-bottom:1.25rem;" data-i18n="registerTitle">
+            Đăng ký
+          </button>
+
+          <p class="auth-footer-link">
+            <span data-i18n="hasAccount">Đã có tài khoản?</span>
+            <a href="#" onclick="toggleForms();return false;" data-i18n="loginNow">Đăng nhập</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-bottom"><p>&copy; 2025 KitchenPal</p></div>
+  </footer>
+
+  <!-- 1. Firebase SDK FIRST -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  
+  <!-- 2. Config SECOND -->
+  <script src="../scripts/config.js"></script>
+  
+  <!-- 3. App and Credits AFTER config -->
+  <script src="../scripts/app.js"></script>
+  <script src="../scripts/credits.js"></script>
+  <script src="../scripts/user.js"></script>
+</body>
+</html>
+

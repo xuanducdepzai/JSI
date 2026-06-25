@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tìm kiếm — KitchenPal</title>
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="../scripts/config.js"></script>
+</head>
+<body data-page="search">
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+      <button class="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+        <li><a href="search.html" class="active" data-i18n="search">Tìm kiếm</a></li>
+        <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+      </ul>
+      <div class="auth-buttons">
+        <button id="langToggle">EN</button>
+        <button id="themeToggle">🌙</button>
+        <div class="user-info" style="display:none;align-items:center;gap:0.5rem;">
+          <span class="user-name" style="font-size:0.85rem;font-weight:600;"></span>
+          <button class="btn btn-glass btn-sm" onclick="app.logout();window.location.reload()">←</button>
+        </div>
+        <a href="profile.html" class="btn btn-glass btn-sm" id="profileLink" style="display:none;">👤 Hồ sơ</a>
+        <a href="auth.html" class="btn btn-primary btn-sm btn-login" data-i18n="login">Đăng nhập</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h1 class="section-title" data-i18n="search">Tìm kiếm công thức</h1>
+
+      <!-- Search Box -->
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input"
+               data-i18n-placeholder="searchPlaceholder"
+               placeholder="Tìm theo tên, nguyên liệu, món ăn...">
+      </div>
+
+      <!-- Filters -->
+      <div class="glass filters-panel">
+        <h3 data-i18n="filters">Bộ lọc</h3>
+        <div class="filters-grid" style="margin-top:1rem;">
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="diet">Chế độ ăn</label>
+            <select id="dietFilter" class="form-select">
+              <option value="">--</option>
+              <option value="vegetarian" data-i18n="vegetarian">Chay</option>
+              <option value="vegan" data-i18n="vegan">Thuần chay</option>
+              <option value="gluten free" data-i18n="glutenFree">Không gluten</option>
+              <option value="ketogenic" data-i18n="ketogenic">Keto</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="cuisine">Ẩm thực</label>
+            <select id="cuisineFilter" class="form-select">
+              <option value="">--</option>
+              <option value="italian" data-i18n="italian">Ý</option>
+              <option value="asian" data-i18n="asian">Châu Á</option>
+              <option value="mexican" data-i18n="mexican">Mexico</option>
+              <option value="american" data-i18n="american">Mỹ</option>
+              <option value="french" data-i18n="french">Pháp</option>
+              <option value="vietnamese">Vietnamese</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="minCalories">Calo tối thiểu</label>
+            <input type="number" id="minCalories" class="form-input" placeholder="vd: 200" min="0">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="maxCalories">Calo tối đa</label>
+            <input type="number" id="maxCalories" class="form-input" placeholder="vd: 800" min="0">
+          </div>
+
+        </div>
+        <div class="filter-actions">
+          <button id="applyFiltersBtn" class="btn btn-primary" data-i18n="applyFilter">Áp dụng</button>
+          <button id="resetFiltersBtn" class="btn btn-glass" data-i18n="resetFilter">Xóa bộ lọc</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="section">
+      <div class="results-header">
+        <h2>
+          <span data-i18n="results">Kết quả tìm kiếm</span>
+          <span class="results-count" id="resultCount"></span>
+        </h2>
+        <select id="sortBy" class="form-select" style="max-width:180px;">
+          <option value="relevance" data-i18n="sortRelevance">Liên quan</option>
+          <option value="rating" data-i18n="sortRating">Đánh giá cao</option>
+          <option value="time" data-i18n="sortTime">Thời gian nấu</option>
+        </select>
+      </div>
+
+      <div class="grid-3" id="searchResults">
+        <div class="spinner-wrap" style="grid-column:1/-1">
+          <div class="spinner"></div>
+          <p data-i18n="loading">Đang tải...</p>
+        </div>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" style="display:none;">
+        <div class="empty-state glass">
+          <div class="empty-icon">🔍</div>
+          <h2 data-i18n="noResults">Không tìm thấy công thức</h2>
+          <p data-i18n="noResultsDesc">Thử từ khoá khác hoặc điều chỉnh bộ lọc</p>
+          <a href="index.html" class="btn btn-primary" data-i18n="backHome">Trang chủ</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">🍳 <span>Kitchen</span>Pal</a>
+        <p data-i18n="footerDesc">Khám phá công thức từ khắp nơi trên thế giới</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="links">Liên kết</h4>
+        <ul>
+          <li><a href="index.html" data-i18n="home">Trang chủ</a></li>
+          <li><a href="search.html" data-i18n="search">Tìm kiếm</a></li>
+          <li><a href="favorite.html" data-i18n="favorites">Yêu thích</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2025 KitchenPal</p></div>
+  </footer>
+
+  <!-- 1. Firebase SDK FIRST -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  
+  <!-- 2. Config SECOND -->
+  <script src="../scripts/config.js"></script>
+  
+  <!-- 3. App and Credits AFTER config -->
+  <script src="../scripts/app.js"></script>
+  <script src="../scripts/credits.js"></script>
+  <script src="../scripts/user.js"></script>
+</body>
+</html>
+

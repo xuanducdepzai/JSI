@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitchenPal Admin — Control Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles/admin.css">
+</head>
+
+<body data-page="admin">
+
+    <!-- Auth Loader Overlay -->
+    <div id="adminAuthLoader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f1117; display: flex; align-items: center; justify-content: center; z-index: 9999; color: #fff; font-family: sans-serif; font-size: 1.25rem;">
+        <div style="text-align: center;">
+            <div style="border: 4px solid rgba(255,255,255,0.1); border-top-color: #E9B872; border-radius: 50%; width: 50px; height: 50px; animation: admin-spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+            Đang kiểm tra quyền truy cập...
+        </div>
+    </div>
+    <style>
+    @keyframes admin-spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <!-- ░░ SIDEBAR ░░ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">
+                <span class="logo-icon">🍳</span>
+                <div>
+                    <span class="logo-text">Kitchen<strong>Pal</strong></span>
+                    <span class="logo-badge">ADMIN</span>
+                </div>
+            </a>
+            <button class="sidebar-collapse" id="sidebarToggle" title="Thu gọn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M11 19l-7-7 7-7M18 19l-7-7 7-7" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-group">
+                <span class="nav-group-label">Tổng quan</span>
+                <a href="#" class="nav-item active" data-panel="dashboard">
+                    <span class="nav-icon">⬡</span>
+                    <span class="nav-label">Dashboard</span>
+                    <span class="nav-badge live">Live</span>
+                </a>
+</div>
+
+            <div class="nav-group">
+                <span class="nav-group-label">Quản lý</span>
+                <a href="#" class="nav-item" data-panel="users">
+                    <span class="nav-icon">◎</span>
+                    <span class="nav-label">Người dùng</span>
+                    <span class="nav-badge" id="userCountBadge">–</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="credits">
+                    <span class="nav-icon">⚡</span>
+                    <span class="nav-label">Tín dụng</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="recipes">
+                    <span class="nav-icon">◉</span>
+                    <span class="nav-label">Công thức</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-label">Hệ thống</span>
+                <a href="#" class="nav-item" data-panel="reports">
+                    <span class="nav-icon">▣</span>
+                    <span class="nav-label">Báo cáo</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="settings">
+                    <span class="nav-icon">⚙</span>
+                    <span class="nav-label">Cài đặt</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="logs">
+                    <span class="nav-icon">▤</span>
+                    <span class="nav-label">Activity Log</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="admin-identity">
+                <div class="admin-avatar">A</div>
+                <div class="admin-info">
+                    <span class="admin-name">Administrator</span>
+                    <span class="admin-role">Super Admin</span>
+                </div>
+                <button class="btn-icon" onclick="adminLogout()" title="Đăng xuất">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ░░ MAIN ░░ -->
+    <div class="admin-main" id="adminMain">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="btn-icon mobile-menu-btn" id="mobileMenuBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+                <div class="breadcrumb">
+                    <span id="breadcrumbText">Dashboard</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-search">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" placeholder="Tìm kiếm..." id="globalSearch">
+                </div>
+                <button class="btn-icon notif-btn" id="notifBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span class="notif-dot"></span>
+                </button>
+                <button class="theme-toggle-btn" id="themeToggle">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <a href="index.html" class="btn-view-site">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                    Xem trang web
+                </a>
+            </div>
+        </header>
+
+        <!-- ░░ PANELS ░░ -->
+        <div class="panels-container">
+
+            <!-- ═══ DASHBOARD ═══ -->
+            <section class="panel active" id="panel-dashboard">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Dashboard</h1>
+                        <p class="panel-subtitle">Chào mừng trở lại! Đây là tổng quan hệ thống.</p>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-glass btn-sm" onclick="refreshDashboard()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                            </svg>
+                            Làm mới
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="exportReport()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Xuất báo cáo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card" data-color="accent">
+                        <div class="stat-icon">◎</div>
+                        <div class="stat-body">
+                            <div class="stat-value" id="statUsers">–</div>
+                            <div class="stat-label">Tổng người dùng</div>
+                            <div class="stat-change positive">+12% so với tháng trước</div>
+                        </div>
+                        <div class="stat-spark" id="spark-users"></div>
+                    </div>
+                    <div class="stat-card" data-color="gold">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-body">
+                            <div class="stat-value" id="statCredits">–</div>
+                            <div class="stat-label">Tổng điểm lưu hành</div>
+                            <div class="stat-change positive">+5% tuần này</div>
+                        </div>
+                        <div class="stat-spark" id="spark-credits"></div>
+                    </div>
+                    <div class="stat-card" data-color="green">
+                        <div class="stat-icon">👑</div>
+                        <div class="stat-body">
+                            <div class="stat-value" id="statPremium">–</div>
+                            <div class="stat-label">Thành viên Premium</div>
+                            <div class="stat-change positive">+3 tuần này</div>
+                        </div>
+                        <div class="stat-spark" id="spark-premium"></div>
+                    </div>
+                    <div class="stat-card" data-color="info">
+                        <div class="stat-icon">◉</div>
+                        <div class="stat-body">
+                            <div class="stat-value" id="statActive">–</div>
+                            <div class="stat-label">Hoạt động hôm nay</div>
+                            <div class="stat-change neutral">online ngay bây giờ</div>
+                        </div>
+                        <div class="stat-spark" id="spark-active"></div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card glass">
+                        <div class="chart-header">
+                            <h3>Người dùng đăng ký</h3>
+                            <div class="chart-tabs">
+                                <button class="ctab active" data-range="7">7N</button>
+                                <button class="ctab" data-range="30">30N</button>
+                                <button class="ctab" data-range="90">90N</button>
+                            </div>
+                        </div>
+                        <canvas id="userChart" height="200"></canvas>
+                    </div>
+                    <div class="chart-card glass chart-sm">
+                        <div class="chart-header">
+                            <h3>Phân bổ Credit</h3>
+                        </div>
+                        <canvas id="creditDistChart" height="200"></canvas>
+                        <div class="donut-legend" id="donutLegend"></div>
+                    </div>
+                </div>
+
+                <!-- Recent Users + Quick Actions -->
+                <div class="dash-bottom">
+                    <div class="glass recent-card">
+                        <div class="recent-header">
+                            <h3>Người dùng mới nhất</h3>
+                            <button class="link-btn" onclick="switchPanel('users')">Xem tất cả →</button>
+                        </div>
+                        <div id="recentUsersList" class="recent-list"></div>
+                    </div>
+                    <div class="glass quick-actions-card">
+                        <h3>Hành động nhanh</h3>
+                        <div class="quick-grid">
+                            <button class="quick-btn" onclick="switchPanel('users')">
+                                <span>◎</span>
+                                <span>Thêm user</span>
+                            </button>
+                            <button class="quick-btn" onclick="bulkAddCreditsModal()">
+                                <span>⚡</span>
+                                <span>Cộng điểm</span>
+                            </button>
+                            <button class="quick-btn" onclick="switchPanel('reports')">
+                                <span>▣</span>
+                                <span>Báo cáo</span>
+                            </button>
+                            <button class="quick-btn" onclick="broadcastModal()">
+                                <span>📢</span>
+                                <span>Thông báo</span>
+                            </button>
+                            <button class="quick-btn" onclick="switchPanel('settings')">
+                                <span>⚙</span>
+                                <span>Cài đặt</span>
+                            </button>
+                            <button class="quick-btn" onclick="switchPanel('logs')">
+                                <span>▤</span>
+                                <span>Nhật ký</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ USERS ═══ -->
+            <section class="panel" id="panel-users">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Quản lý người dùng</h1>
+                        <p class="panel-subtitle">Xem và quản lý toàn bộ tài khoản người dùng</p>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-glass btn-sm" onclick="exportUsers()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Xuất CSV
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">
+                            + Thêm người dùng
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="glass table-filters">
+                    <div class="filter-row">
+                        <div class="search-box">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                            <input type="text" id="userSearch" placeholder="Tìm email, tên...">
+                        </div>
+                        <select class="form-select-sm" id="userFilter">
+                            <option value="all">Tất cả</option>
+                            <option value="premium">Premium</option>
+                            <option value="free">Free</option>
+                        </select>
+                        <select class="form-select-sm" id="userSort">
+                            <option value="newest">Mới nhất</option>
+                            <option value="credits">Điểm cao nhất</option>
+                            <option value="name">Theo tên</option>
+                        </select>
+                        <button class="btn btn-glass btn-sm" onclick="loadUsers()">Lọc</button>
+                    </div>
+                    <div class="bulk-actions" id="bulkActions" style="display:none;">
+                        <span id="selectedCount">0</span> đã chọn
+                        <button class="btn btn-glass btn-sm" onclick="bulkCreditSelected()">⚡ Cộng điểm</button>
+                        <button class="btn btn-danger btn-sm" onclick="bulkDeleteSelected()">Xóa</button>
+                    </div>
+                </div>
+
+                <div class="glass table-card">
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                                <th>Người dùng</th>
+                                <th>Email</th>
+                                <th>Credits</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Lần đăng nhập</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr>
+                                <td colspan="8" class="table-loading">
+                                    <div class="spinner-mini"></div> Đang tải...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="table-footer">
+                        <span id="tableInfo">Hiển thị 0 kết quả</span>
+                        <div class="pagination" id="userPagination"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ CREDITS ═══ -->
+            <section class="panel" id="panel-credits">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Quản lý tín dụng</h1>
+                        <p class="panel-subtitle">Phân phối và theo dõi hệ thống điểm tín dụng</p>
+                    </div>
+                </div>
+
+                <!-- Credit Config -->
+                <div class="credits-layout">
+                    <div class="glass credit-config-card">
+                        <h3>⚙️ Cấu hình điểm</h3>
+                        <div class="config-form">
+                            <div class="config-row">
+                                <label>Điểm đăng ký mặc định</label>
+                                <div class="config-input-wrap">
+                                    <input type="number" id="cfg_register" value="5" min="0" max="100">
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfig('register')">Lưu</button>
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <label>Điểm hồi phục mỗi ngày</label>
+                                <div class="config-input-wrap">
+                                    <input type="number" id="cfg_daily" value="5" min="0" max="50">
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfig('daily')">Lưu</button>
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <label>Chi phí xem công thức</label>
+                                <div class="config-input-wrap">
+                                    <input type="number" id="cfg_view" value="1" min="0" max="10">
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfig('view')">Lưu</button>
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <label>Chi phí Fridge AI</label>
+                                <div class="config-input-wrap">
+                                    <input type="number" id="cfg_fridge" value="1" min="0" max="10">
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfig('fridge')">Lưu</button>
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <label>Chi phí Meal Plan</label>
+                                <div class="config-input-wrap">
+                                    <input type="number" id="cfg_mealplan" value="3" min="0" max="20">
+                                    <button class="btn btn-primary btn-sm" onclick="saveConfig('mealplan')">Lưu</button>
+                                </div>
+                            </div>
+                            <div class="config-row">
+                                <label>Giới hạn điểm tối đa</label>
+                                <div class="config-input-wrap">
+                                    <input type="number" id="cfg_maxcredits" value="50" min="10" max="1000">
+                                    <button class="btn btn-primary btn-sm"
+                                        onclick="saveConfig('maxcredits')">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="credit-right">
+                        <!-- Bulk credit -->
+                        <div class="glass">
+                            <div style="padding:1.5rem;">
+                                <h3>⚡ Cộng điểm hàng loạt</h3>
+                                <p style="color:var(--text-3);font-size:.85rem;margin:.5rem 0 1rem;">Cộng điểm cho tất
+                                    cả người dùng hoặc nhóm cụ thể</p>
+                                <div class="form-group-row">
+                                    <select class="form-select-sm" id="bulkTarget">
+                                        <option value="all">Tất cả người dùng</option>
+                                        <option value="free">Chỉ Free users</option>
+                                        <option value="premium">Chỉ Premium users</option>
+                                        <option value="inactive">Người dùng không hoạt động</option>
+                                    </select>
+                                    <input type="number" class="form-input-sm" id="bulkAmount" placeholder="Số điểm"
+                                        min="1" value="5">
+                                    <button class="btn btn-primary" onclick="executeBulkCredit()">Cộng điểm</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spin config -->
+                        <div class="glass">
+                            <div style="padding:1.5rem;">
+                                <h3>🎰 Cấu hình vòng quay</h3>
+                                <p style="color:var(--text-3);font-size:.85rem;margin:.5rem 0 1rem;">Chỉnh phần thưởng
+                                    các ô vòng quay</p>
+                                <div id="spinConfigList" class="spin-config-list"></div>
+                                <button class="btn btn-glass btn-sm" style="margin-top:1rem;"
+                                    onclick="saveSpinConfig()">Lưu cấu hình vòng quay</button>
+                            </div>
+                        </div>
+
+                        <!-- Topup packages -->
+                        <div class="glass">
+                            <div style="padding:1.5rem;">
+                                <h3>💳 Gói nạp điểm</h3>
+                                <div class="topup-config-list" id="topupConfigList"></div>
+                                <button class="btn btn-glass btn-sm" style="margin-top:1rem;"
+                                    onclick="addTopupPackage()">+ Thêm gói</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Credit transactions -->
+                <div class="glass" style="margin-top:1.5rem;">
+                    <div style="padding:1.5rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                            <h3>Lịch sử giao dịch điểm</h3>
+                            <button class="btn btn-glass btn-sm" onclick="loadTransactions()">Làm mới</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Thời gian</th>
+                                    <th>Người dùng</th>
+                                    <th>Loại</th>
+                                    <th>Số điểm</th>
+                                    <th>Lý do</th>
+                                    <th>Số dư sau</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsBody">
+                                <tr>
+                                    <td colspan="6" class="table-loading">
+                                        <div class="spinner-mini"></div> Đang tải...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ RECIPES ═══ -->
+            <section class="panel" id="panel-recipes">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Quản lý công thức</h1>
+                        <p class="panel-subtitle">Theo dõi và quản lý các công thức phổ biến</p>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-primary btn-sm" onclick="fetchLiveRecipes()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                            </svg>
+                            Tải từ TheMealDB
+                        </button>
+                    </div>
+                </div>
+
+                <div class="recipes-stats-row">
+                    <div class="glass mini-stat">
+                        <span class="ms-icon">◉</span>
+                        <span class="ms-val" id="totalRecipesVal">–</span>
+                        <span class="ms-label">Công thức</span>
+                    </div>
+                    <div class="glass mini-stat">
+                        <span class="ms-icon">❤️</span>
+                        <span class="ms-val" id="totalFavsVal">–</span>
+                        <span class="ms-label">Yêu thích</span>
+                    </div>
+                    <div class="glass mini-stat">
+                        <span class="ms-icon">⚡</span>
+                        <span class="ms-val" id="totalViewsVal">–</span>
+                        <span class="ms-label">Lượt xem</span>
+                    </div>
+                    <div class="glass mini-stat">
+                        <span class="ms-icon">🏷️</span>
+                        <span class="ms-val" id="totalCatsVal">–</span>
+                        <span class="ms-label">Danh mục</span>
+                    </div>
+                </div>
+
+                <div class="glass table-card">
+                    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);">
+                        <input type="text" class="search-input-sm" id="recipeSearch" placeholder="Tìm công thức..."
+                            oninput="filterRecipes(this.value)">
+                    </div>
+                    <table class="data-table" id="recipesTable">
+                        <thead>
+                            <tr>
+                                <th>Ảnh</th>
+                                <th>Tên</th>
+                                <th>Danh mục</th>
+                                <th>Lượt xem</th>
+                                <th>Yêu thích</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recipesTableBody">
+                            <tr>
+                                <td colspan="6" class="table-loading">
+                                    <div class="spinner-mini"></div> Đang tải từ TheMealDB...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ═══ REPORTS ═══ -->
+            <section class="panel" id="panel-reports">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Báo cáo</h1>
+                        <p class="panel-subtitle">Tạo và tải xuống báo cáo hệ thống</p>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="glass report-card" onclick="generateReport('users')">
+                        <div class="report-icon">◎</div>
+                        <h3>Báo cáo người dùng</h3>
+                        <p>Danh sách đầy đủ người dùng, điểm, trạng thái premium</p>
+                        <div class="report-meta">CSV · Cập nhật realtime</div>
+                        <button class="btn btn-primary btn-sm report-btn">Tạo báo cáo</button>
+                    </div>
+                    <div class="glass report-card" onclick="generateReport('credits')">
+                        <div class="report-icon">⚡</div>
+                        <h3>Báo cáo tín dụng</h3>
+                        <p>Tổng điểm, phân phối, giao dịch trong khoảng thời gian</p>
+                        <div class="report-meta">CSV · Theo khoảng ngày</div>
+                        <button class="btn btn-primary btn-sm report-btn">Tạo báo cáo</button>
+                    </div>
+                    <div class="glass report-card" onclick="generateReport('premium')">
+                        <div class="report-icon">👑</div>
+                        <h3>Báo cáo Premium</h3>
+                        <p>Số lượng premium, doanh thu mô phỏng, conversion rate</p>
+                        <div class="report-meta">PDF · Thống kê tháng</div>
+                        <button class="btn btn-primary btn-sm report-btn">Tạo báo cáo</button>
+                    </div>
+                    <div class="glass report-card" onclick="generateReport('activity')">
+                        <div class="report-icon">▣</div>
+                        <h3>Báo cáo hoạt động</h3>
+                        <p>Lượt xem công thức, tìm kiếm, hành vi người dùng</p>
+                        <div class="report-meta">CSV · 30 ngày gần nhất</div>
+                        <button class="btn btn-primary btn-sm report-btn">Tạo báo cáo</button>
+                    </div>
+                </div>
+
+                <div class="glass" style="margin-top:1.5rem;padding:1.5rem;">
+                    <h3 style="margin-bottom:1rem;">Xuất dữ liệu theo khoảng thời gian</h3>
+                    <div class="date-range-form">
+                        <div class="form-group">
+                            <label>Từ ngày</label>
+                            <input type="date" id="dateFrom" class="form-input-sm">
+                        </div>
+                        <div class="form-group">
+                            <label>Đến ngày</label>
+                            <input type="date" id="dateTo" class="form-input-sm">
+                        </div>
+                        <div class="form-group">
+                            <label>Loại dữ liệu</label>
+                            <select class="form-select-sm" id="exportType">
+                                <option value="users">Người dùng</option>
+                                <option value="transactions">Giao dịch</option>
+                                <option value="all">Tất cả</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="exportByDateRange()">Xuất CSV</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ SETTINGS ═══ -->
+            <section class="panel" id="panel-settings">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Cài đặt hệ thống</h1>
+                        <p class="panel-subtitle">Quản lý cấu hình ứng dụng và API keys</p>
+                    </div>
+                </div>
+
+                <div class="settings-layout">
+                    <div class="settings-sidebar">
+                        <button class="stab active" data-stab="general">Chung</button>
+                        <button class="stab" data-stab="api">API Keys</button>
+                        <button class="stab" data-stab="security">Bảo mật</button>
+                        <button class="stab" data-stab="appearance">Giao diện</button>
+                        <button class="stab" data-stab="notifications">Thông báo</button>
+                    </div>
+                    <div class="settings-content">
+
+                        <div class="stab-content active" id="stab-general">
+                            <div class="glass settings-section">
+                                <h3>Thông tin ứng dụng</h3>
+                                <div class="settings-form">
+                                    <div class="form-group">
+                                        <label>Tên ứng dụng</label>
+                                        <input type="text" class="form-input" value="KitchenPal">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Slogan</label>
+                                        <input type="text" class="form-input"
+                                            value="Khám phá hàng nghìn công thức từ khắp thế giới">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Ngôn ngữ mặc định</label>
+                                        <select class="form-select">
+                                            <option value="vi" selected>Tiếng Việt</option>
+                                            <option value="en">English</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Theme mặc định</label>
+                                        <select class="form-select">
+                                            <option value="dark" selected>Dark</option>
+                                            <option value="light">Light</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="saveSettings('general')">Lưu thay
+                                        đổi</button>
+                                </div>
+                            </div>
+                            <div class="glass settings-section">
+                                <h3>Bảo trì hệ thống</h3>
+                                <div class="maintenance-actions">
+                                    <div class="maint-item">
+                                        <div>
+                                            <strong>Xóa cache</strong>
+                                            <p>Xóa toàn bộ sessionStorage và cache tạm thời</p>
+                                        </div>
+                                        <button class="btn btn-glass btn-sm" onclick="clearCache()">Xóa cache</button>
+                                    </div>
+                                    <div class="maint-item">
+                                        <div>
+                                            <strong>Reset daily regen</strong>
+                                            <p>Buộc chạy lại hệ thống hồi phục điểm ngày hôm nay</p>
+                                        </div>
+                                        <button class="btn btn-glass btn-sm" onclick="resetRegen()">Reset</button>
+                                    </div>
+                                    <div class="maint-item danger">
+                                        <div>
+                                            <strong>Xóa tất cả dữ liệu test</strong>
+                                            <p>Xóa các tài khoản test có email chứa "@test.com"</p>
+                                        </div>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteTestData()">Xóa</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stab-content" id="stab-api">
+                            <div class="glass settings-section">
+                                <h3>Firebase Configuration</h3>
+                                <div class="settings-form">
+                                    <div class="form-group">
+                                        <label>Project ID</label>
+                                        <input type="text" class="form-input mono" id="set_projectId"
+                                            value="jsi-cuoiky">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>API Key</label>
+                                        <div class="api-key-wrap">
+                                            <input type="password" class="form-input mono" id="set_firebaseKey"
+                                                value="AIzaSyAUAX32zsvvvtqUHQmANUuCP2AQLMNoo1g">
+                                            <button class="btn-icon"
+                                                onclick="toggleApiKey('set_firebaseKey')">👁</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Auth Domain</label>
+                                        <input type="text" class="form-input mono" value="jsi-cuoiky.firebaseapp.com">
+                                    </div>
+                                    <button class="btn btn-primary" onclick="saveSettings('api')">Lưu API keys</button>
+                                </div>
+                            </div>
+                            <div class="glass settings-section">
+                                <h3>Gemini AI</h3>
+                                <div class="settings-form">
+                                    <div class="form-group">
+                                        <label>Gemini API Key</label>
+                                        <div class="api-key-wrap">
+                                            <input type="password" class="form-input mono" id="set_geminiKey"
+                                                value="AIzaSyD7znZN_HCBZV3-HIKYXXadM43oZzztid0">
+                                            <button class="btn-icon" onclick="toggleApiKey('set_geminiKey')">👁</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Model</label>
+                                        <select class="form-select mono">
+                                            <option selected>gemini-2.0-flash</option>
+                                            <option>gemini-1.5-pro</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="saveSettings('gemini')">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stab-content" id="stab-security">
+                            <div class="glass settings-section">
+                                <h3>Bảo mật Admin</h3>
+                                <div class="settings-form">
+                                    <div class="form-group">
+                                        <label>Admin emails được phép truy cập</label>
+                                        <textarea class="form-input" rows="4" id="adminEmails"
+                                            placeholder="admin@kitchenpal.com&#10;superadmin@kitchenpal.com"></textarea>
+                                        <small style="color:var(--text-3);">Mỗi email trên một dòng</small>
+                                    </div>
+                                    <div class="form-group toggle-group">
+                                        <div>
+                                            <strong>Yêu cầu 2FA</strong>
+                                            <p>Bật xác thực hai yếu tố cho tài khoản admin</p>
+                                        </div>
+                                        <label class="toggle"><input type="checkbox"><span
+                                                class="toggle-slider"></span></label>
+                                    </div>
+                                    <div class="form-group toggle-group">
+                                        <div>
+                                            <strong>Giới hạn IP</strong>
+                                            <p>Chỉ cho phép đăng nhập từ IP cụ thể</p>
+                                        </div>
+                                        <label class="toggle"><input type="checkbox"><span
+                                                class="toggle-slider"></span></label>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="saveSettings('security')">Lưu cài đặt bảo
+                                        mật</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stab-content" id="stab-appearance">
+                            <div class="glass settings-section">
+                                <h3>Tuỳ chỉnh màu sắc</h3>
+                                <div class="color-pickers">
+                                    <div class="color-item">
+                                        <label>Màu chính (Accent)</label>
+                                        <div class="color-input-wrap">
+                                            <input type="color" value="#A63D40" id="colorAccent">
+                                            <span>#A63D40</span>
+                                        </div>
+                                    </div>
+                                    <div class="color-item">
+                                        <label>Màu vàng (Gold)</label>
+                                        <div class="color-input-wrap">
+                                            <input type="color" value="#E9B872" id="colorGold">
+                                            <span>#E9B872</span>
+                                        </div>
+                                    </div>
+                                    <div class="color-item">
+                                        <label>Màu nền (Dark)</label>
+                                        <div class="color-input-wrap">
+                                            <input type="color" value="#0f1117" id="colorBg">
+                                            <span>#0f1117</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" style="margin-top:1rem;" onclick="applyColors()">Áp dụng
+                                    màu</button>
+                                <button class="btn btn-glass" style="margin-top:1rem;margin-left:.75rem;"
+                                    onclick="resetColors()">Đặt lại</button>
+                            </div>
+                        </div>
+
+                        <div class="stab-content" id="stab-notifications">
+                            <div class="glass settings-section">
+                                <h3>Cài đặt thông báo hệ thống</h3>
+                                <div class="settings-form">
+                                    <div class="form-group toggle-group">
+                                        <div>
+                                            <strong>Thông báo người dùng mới</strong>
+                                            <p>Nhận thông báo khi có tài khoản mới đăng ký</p>
+                                        </div>
+                                        <label class="toggle"><input type="checkbox" checked><span
+                                                class="toggle-slider"></span></label>
+                                    </div>
+                                    <div class="form-group toggle-group">
+                                        <div>
+                                            <strong>Cảnh báo hết quota</strong>
+                                            <p>Cảnh báo khi API quota < 20%</p>
+                                        </div>
+                                        <label class="toggle"><input type="checkbox" checked><span
+                                                class="toggle-slider"></span></label>
+                                    </div>
+                                    <div class="form-group toggle-group">
+                                        <div>
+                                            <strong>Báo cáo hàng tuần</strong>
+                                            <p>Tự động gửi báo cáo mỗi thứ Hai</p>
+                                        </div>
+                                        <label class="toggle"><input type="checkbox"><span
+                                                class="toggle-slider"></span></label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email nhận thông báo</label>
+                                        <input type="email" class="form-input" placeholder="admin@kitchenpal.com">
+                                    </div>
+                                    <button class="btn btn-primary" onclick="saveSettings('notifications')">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ LOGS ═══ -->
+            <section class="panel" id="panel-logs">
+                <div class="panel-header">
+                    <div>
+                        <h1 class="panel-title">Activity Log</h1>
+                        <p class="panel-subtitle">Nhật ký toàn bộ hoạt động trên hệ thống</p>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-glass btn-sm" onclick="clearLogs()">Xóa log</button>
+                        <button class="btn btn-primary btn-sm" onclick="exportLogs()">Xuất log</button>
+                    </div>
+                </div>
+
+                <div class="glass table-filters">
+                    <div class="filter-row">
+                        <select class="form-select-sm" id="logTypeFilter">
+                            <option value="all">Tất cả</option>
+                            <option value="login">Đăng nhập</option>
+                            <option value="credit">Tín dụng</option>
+                            <option value="premium">Premium</option>
+                            <option value="error">Lỗi</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <input type="text" class="search-input-sm" id="logSearch" placeholder="Tìm log...">
+                        <button class="btn btn-glass btn-sm" onclick="filterLogs()">Lọc</button>
+                        <button class="btn btn-glass btn-sm" onclick="loadLogs()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass">
+                    <div class="log-terminal" id="logTerminal">
+                        <div class="log-line log-info">[SYSTEM] KitchenPal Admin Panel initialized...</div>
+                        <div class="log-line log-success">[AUTH] Admin session started</div>
+                        <div class="log-line log-info">[DB] Connected to Firebase Firestore</div>
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- end panels-container -->
+    </div><!-- end admin-main -->
+
+    <!-- ░░ MODALS ░░ -->
+
+    <!-- User Detail Modal -->
+    <div class="modal-overlay" id="userDetailModal">
+        <div class="modal-box modal-lg">
+            <div class="modal-head">
+                <h2 id="userDetailTitle">Chi tiết người dùng</h2>
+                <button class="modal-close" onclick="closeModal('userDetailModal')">✕</button>
+            </div>
+            <div class="modal-body" id="userDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- Edit Credits Modal -->
+    <div class="modal-overlay" id="editCreditsModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2>Chỉnh sửa điểm tín dụng</h2>
+                <button class="modal-close" onclick="closeModal('editCreditsModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-3);margin-bottom:1rem;">Người dùng: <strong id="editCreditEmail">–</strong>
+                </p>
+                <div class="form-group">
+                    <label>Điểm hiện tại</label>
+                    <input type="number" class="form-input" id="editCreditCurrent" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Thao tác</label>
+                    <select class="form-select" id="editCreditAction">
+                        <option value="set">Đặt giá trị mới</option>
+                        <option value="add">Cộng thêm</option>
+                        <option value="subtract">Trừ đi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số điểm</label>
+                    <input type="number" class="form-input" id="editCreditAmount" min="0" value="5">
+                </div>
+                <div class="form-group">
+                    <label>Lý do</label>
+                    <input type="text" class="form-input" id="editCreditReason" placeholder="Admin điều chỉnh...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-glass" onclick="closeModal('editCreditsModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="confirmEditCredits()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2>Thêm người dùng</h2>
+                <button class="modal-close" onclick="closeModal('addUserModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" class="form-input" id="newUserName" placeholder="Tên người dùng...">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-input" id="newUserEmail" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Điểm khởi đầu</label>
+                    <input type="number" class="form-input" id="newUserCredits" value="5" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select class="form-select" id="newUserPremium">
+                        <option value="false">Free</option>
+                        <option value="true">Premium</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-glass" onclick="closeModal('addUserModal')">Hủy</button>
+                <button class="btn btn-primary" onclick="confirmAddUser()">Thêm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box modal-sm">
+            <div class="modal-head">
+                <h2 id="confirmTitle">Xác nhận</h2>
+                <button class="modal-close" onclick="closeModal('confirmModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmDesc" style="color:var(--text-2);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-glass" onclick="closeModal('confirmModal')">Hủy</button>
+                <button class="btn btn-primary" id="confirmActionBtn">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <!-- 1. Firebase SDK FIRST -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <!-- 2. Config SECOND -->
+    <script src="../scripts/config.js"></script>
+    
+    <!-- 3. Chart library and admin app -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="../scripts/admin.js"></script>
+</body>
+
+</html>
